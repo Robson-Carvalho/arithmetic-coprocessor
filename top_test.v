@@ -51,11 +51,29 @@ module top_test();
     initial begin
       // Valores da matrizes de entrada para testes das operações.
       // Cada dois dígitos dessa sequência hexadecimal representa 1 Byte.
-      A_flat = 200'h000000000000000000000000000000000000000000000E0E0E; 
+      
+      A_flat = 200'h0E0E0E0E0E0E0E0E0E0E0E0E0E0E0C0C0C0C0C0C0C0E0E0E0E; 
       B_flat = 200'h00000000000000000000000000000000000000000000030201; 
 
       // Valor para visualização das matrizes de entrada e saída.
-      n = 3'd4;
+      n = 3'd5;
+
+
+      // Teste 6 - Produto por escalar: 110
+      $display("\nTeste 6: Produto por escalar (opcode 110)");
+      // Atualização do opcode - Sempre que o opcode alterar, realizamos uma operação.
+      opcode = 3'b110;
+      // Valor escalar para realização de produto
+      f = 8'b00001010;
+      // O número após o # representa o número de ciclos
+      #1;
+      $display("A = ");
+      display_matrix(A_flat, n);
+      $display("Valor = %d", $signed(f));
+      $display("C = ");
+      display_matrix(C_flat, n);
+      $display("Overflow Flag = %b", overflow_flag);
+
 
       
       // Teste 1 - Soma: 001
@@ -63,7 +81,6 @@ module top_test();
 
       // Atualização do opcode - Sempre que o opcode alterar, realizamos uma operação.
       opcode = 3'b001;
-
       // O número após o # representa o número de ciclos
       #1;
 
@@ -143,26 +160,6 @@ module top_test();
       display_matrix(C_flat, n);
       $display("Overflow Flag = %b", overflow_flag);
 
-
-      // Teste 6 - Produto por escalar: 110
-      $display("\nTeste 6: Produto por escalar (opcode 110)");
-
-      // Atualização do opcode - Sempre que o opcode alterar, realizamos uma operação.
-      opcode = 3'b110;
-      // Valor escalar para realização de produto
-      f = 8'b00000010;
-
-      // O número após o # representa o número de ciclos
-      #1;
-
-      $display("A = ");
-      display_matrix(A_flat, n);
-      $display("Valor = %d", $signed(f));
-      $display("C = ");
-      display_matrix(C_flat, n);
-      $display("Overflow Flag = %b", overflow_flag);
-
-
       // Teste 7 - Determinante: 111
       $display("\nTeste 7: Determinante (opcode 111)");
 
@@ -177,8 +174,6 @@ module top_test();
       $display("C = ");
       display_matrix(C_flat, n);
       $display("Overflow Flag = %b", overflow_flag);
-
-
 
 
       $finish;

@@ -80,7 +80,7 @@ module alu (
         overflow_flag = 1'b0;
         done = 1'b0;
 
-          case (opcode)
+        case (opcode)
             3'b001: begin  // Soma
                 C_flat = sum_C;
                 overflow_flag = sum_ovf;
@@ -111,7 +111,7 @@ module alu (
                 overflow_flag = scalar_ovf;
                 done = scalar_done;
             end
-            3'b110: begin  // Determinante
+            3'b111: begin  // Determinante
                 C_flat = determinant_C;
                 overflow_flag = determinant_ovf;
                 done = determinant_done;
