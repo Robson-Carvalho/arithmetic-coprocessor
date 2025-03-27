@@ -112,9 +112,9 @@ module alu (
                 done = scalar_done;
             end
             3'b111: begin  // Determinante
-                C_flat = determinant_C;
-                overflow_flag = determinant_ovf;
-                done = determinant_done;
+                C_flat = 200'b0;
+                overflow_flag = 1'b0;
+                done = 1'b0;
             end
             default: begin // Caso inválido
                 C_flat = 200'b0;
