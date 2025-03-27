@@ -54,8 +54,8 @@ module top_test();
       // Valores da matrizes de entrada para testes das operações.
       // Cada dois dígitos dessa sequência hexadecimal representa 1 Byte.
       
-      A_flat = 200'h0E0E0E0E0E0E0E0E0E0E0E0E0E0E0C0C0C0C0C0C0C0E0E0E0E; 
-      B_flat = 200'h00000000000000000000000000000000000000000000030201; 
+      A_flat = 200'h0E0E0E0E0E0E0E0E0E0E0E0E0E0E0C0C0C0C0C0C0C0E0E8072; 
+      B_flat = 200'h00000000000000000000000000000000000000000000030272; 
 
       // Valor para visualização das matrizes de entrada e saída.
       n = 3'd5;
@@ -66,7 +66,7 @@ module top_test();
       // Atualização do opcode - Sempre que o opcode alterar, realizamos uma operação.
       opcode = 3'b110;
       // Valor escalar para realização de produto
-      f = 8'b00001010;
+      f = 8'b00000010;
       // O número após o # representa o número de ciclos
       #1;
       $display("A = ");
@@ -142,7 +142,6 @@ module top_test();
       display_matrix(A_flat, n);
       $display("C = ");
       display_matrix(C_flat, n);
-      $display("Overflow Flag = %b", overflow_flag);
 
 
       // Teste 5 - Oposta: 011
@@ -177,7 +176,7 @@ module top_test();
       display_matrix(C_flat, n);
       $display("Overflow Flag = %b", overflow_flag);
 
-
+      
       $finish;
     end
 

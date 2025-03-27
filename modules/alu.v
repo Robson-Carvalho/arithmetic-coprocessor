@@ -15,24 +15,22 @@ module alu (
 
     // --- Declaração dos fios de saída de cada módulo ---
     wire [199:0] sum_C, sub_C, mul_C, opposite_C, transpose_C, scalar_C, determinant_C;
-    wire sum_ovf, sub_ovf, mul_ovf, opposite_ovf, transpose_ovf, scalar_ovf, determinant_ovf;
-    wire sum_done, sub_done, mul_done, opposite_done, transpose_done, scalar_done, determinant_done;
+    wire sum_ovf, sub_ovf, mul_ovf, opposite_ovf, scalar_ovf, determinant_ovf;
+    wire mul_done, determinant_done;
 
      // --- Instanciação dos módulos ---
     alu_sum_module sum (
         .A_flat(A_flat),
         .B_flat(B_flat),
         .C_flat(sum_C),
-        .overflow_flag(sum_ovf),
-        .done(sum_done)
+        .overflow_flag(sum_ovf)
     );
 
     alu_subtraction_module sub (
         .A_flat(A_flat),
         .B_flat(B_flat),
         .C_flat(sub_C),
-        .overflow_flag(sub_ovf),
-        .done(sub_done)
+        .overflow_flag(sub_ovf)
     );
 
     alu_multiplication_module mul (
@@ -46,23 +44,19 @@ module alu (
     alu_opposite_module opposite (
         .A_flat(A_flat),
         .C_flat(opposite_C),
-        .overflow_flag(opposite_ovf),
-        .done(opposite_done)
+        .overflow_flag(opposite_ovf)
     );
 
     alu_transpose_module transpose (
         .A_flat(A_flat),
-        .C_flat(transpose_C),
-        .overflow_flag(transpose_ovf),
-        .done(transpose_done)
+        .C_flat(transpose_C)
     );
 
     alu_scalar_module scalar_mult (
         .A_flat(A_flat),
         .scalar(f),
         .C_flat(scalar_C),
-        .overflow_flag(scalar_ovf),
-        .done(scalar_done)
+        .overflow_flag(scalar_ovf)
     );
 
      alu_determinant_module determinant (
@@ -84,12 +78,10 @@ module alu (
             3'b001: begin  // Soma
                 C_flat = sum_C;
                 overflow_flag = sum_ovf;
-                done = sum_done;
             end
             3'b010: begin  // Subtração
                 C_flat = sub_C;
                 overflow_flag = sub_ovf;
-                done = sub_done;
             end
             3'b011: begin  // Multiplicação
                 C_flat = mul_C;
@@ -99,17 +91,13 @@ module alu (
             3'b100: begin  // Matriz oposta
                 C_flat = opposite_C;
                 overflow_flag = opposite_ovf;
-                done = opposite_done;
             end
             3'b101: begin  // Transposta
                 C_flat = transpose_C;
-                overflow_flag = transpose_ovf;
-                done = transpose_done;
             end
             3'b110: begin  // Produto por escalar
                 C_flat = scalar_C;
                 overflow_flag = scalar_ovf;
-                done = scalar_done;
             end
             3'b111: begin  // Determinante
                 C_flat = 200'b0;
