@@ -50,11 +50,11 @@ module alu_multiplication_module (
         C_flat[(row * 40) + 39 -: 8] <= temp[4][7:0];
 
         // Verifica overflow
-        overflow_flag <= (temp[0][15:8] != {8{temp[0][7]}}) ||
-                         (temp[1][15:8] != {8{temp[1][7]}}) ||
-                         (temp[2][15:8] != {8{temp[2][7]}}) ||
-                         (temp[3][15:8] != {8{temp[3][7]}}) ||
-                         (temp[4][15:8] != {8{temp[4][7]}});
+       overflow_flag <= (temp[0] > 127 || temp[0] < -128) ||
+                         (temp[1] > 127 || temp[1] < -128) ||
+                         (temp[2] > 127 || temp[2] < -128) ||
+                         (temp[3] > 127 || temp[3] < -128) ||
+                         (temp[4] > 127 || temp[4] < -128);
 
         // Atualiza row e verifica conclusão
         if (row == 4) begin
