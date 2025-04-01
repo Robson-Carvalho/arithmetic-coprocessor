@@ -1,0 +1,13 @@
+
+State Machine - |top|counter
+Name counter.01 
+counter.00 0 
+counter.01 1 
+
+State Machine - |top|coprocessador:comb_3|state_reg
+Name state_reg.WRITEBACK state_reg.EXECUTE state_reg.DECODE state_reg.FETCH state_reg.CLEANUP 
+state_reg.FETCH 0 0 0 0 0 
+state_reg.DECODE 0 0 1 1 0 
+state_reg.EXECUTE 0 1 0 1 0 
+state_reg.WRITEBACK 1 0 0 1 0 
+state_reg.CLEANUP 0 0 0 1 1 

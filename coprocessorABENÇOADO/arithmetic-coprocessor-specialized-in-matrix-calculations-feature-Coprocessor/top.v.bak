@@ -1,0 +1,41 @@
+module top(
+    input [1:0]Key,    // Botão que simula o clock
+    input Sw,     // Chave do sinal start
+	 output LED
+	 );
+
+    // Definição das fitas de bits para as matrizes A e B
+    wire [14:0] A = 15'b000000000000000;
+    wire [14:0] B = 15'b000000000000011;
+	 wire [14:0] C = 15'b001101000000100;
+   
+	reg [14:0] instruc;
+	reg [4:0] counter;
+	
+	and(clk_start, Key[0], Sw);
+	
+	 coprocessador(
+	 .clk(clk_start),
+	 .reset(),
+	 .instruction(instruc),
+	 .done(LED),
+	 .result(),
+	 );
+	 
+	 always@(posedge Key[1])begin
+	 
+		 if (counter == 0) begin
+				instruc = A;
+				counter = counter + 1;
+		 end
+		 else if(counter == 1) begin
+				instruc = B;
+				counter = counter + 1;
+		 end
+		 else if(counter == 2) begin
+				instruc = C;
+				counter = counter + 1;
+		end
+	 end
+	 
+endmodule

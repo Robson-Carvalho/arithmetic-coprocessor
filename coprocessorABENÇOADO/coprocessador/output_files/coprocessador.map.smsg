@@ -1,0 +1,1 @@
+Warning (10268): Verilog HDL information at coprocessador.v(70): always construct contains both blocking and non-blocking assignments File: /home/aluno/Documentos/GUIROBLUC/arithmetic-coprocessor-specialized-in-matrix-calculations-feature-Coprocessor/coprocessador.v Line: 70
