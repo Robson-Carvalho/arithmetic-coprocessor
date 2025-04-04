@@ -43,9 +43,7 @@ module alu (
         .A_flat(A_flat),
         .B_flat(B_flat),
         .C_flat(mul_C),
-        .clock(clock),
-        .overflow_flag(mul_ovf),
-        .done(mul_done)
+        .overflow_flag(mul_ovf)
     );
 
     alu_opposite_module opposite (

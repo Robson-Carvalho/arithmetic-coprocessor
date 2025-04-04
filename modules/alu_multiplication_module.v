@@ -1,68 +1,55 @@
 module alu_multiplication_module (
-    input signed [199:0] A_flat,  // Matriz A achatada (5x5, 25 elementos de 8 bits com sinal)
-    input signed [199:0] B_flat,  // Matriz B achatada (5x5, 25 elementos de 8 bits com sinal)
-    input clock,
-    output reg signed [199:0] C_flat = 0, // Inicializa como 0
-    output reg overflow_flag,
-    output reg done
+    input signed [199:0] A_flat,  
+    input signed [199:0] B_flat,  
+    output [199:0] C_flat,        
+    output overflow_flag          
 );
 
-    reg [2:0] row = 0;                // Contador de linhas (0 a 4)
-    reg signed [15:0] temp [0:4];     // Resultados temporários
+    wire [24:0] overflow;        
+    wire signed [15:0] temp [0:24]; 
 
-    always @(posedge clock) begin
-        // Calcula os valores da linha atual
-        temp[0] = (A_flat[(row*40) + 7 -: 8]   * B_flat[7:0])    +
-                  (A_flat[(row*40) + 15 -: 8]  * B_flat[47:40])  +
-                  (A_flat[(row*40) + 23 -: 8] * B_flat[87:80])  +
-                  (A_flat[(row*40) + 31 -: 8] * B_flat[127:120]) +
-                  (A_flat[(row*40) + 39 -: 8] * B_flat[167:160]);
+    genvar i, j, k;
+    generate
+        for (i = 0; i < 5; i = i + 1) begin 
+            for (j = 0; j < 5; j = j + 1) begin 
+                wire signed [15:0] temp_sum; // somas temporárias
+                wire signed [15:0] prod [0:4]; // produtos parciais
 
-        temp[1] = (A_flat[(row*40) + 7 -: 8]   * B_flat[15:8])   +
-                  (A_flat[(row*40) + 15 -: 8]  * B_flat[55:48])  +
-                  (A_flat[(row*40) + 23 -: 8] * B_flat[95:88])  +
-                  (A_flat[(row*40) + 31 -: 8] * B_flat[135:128]) +
-                  (A_flat[(row*40) + 39 -: 8] * B_flat[175:168]);
+                
+                for (k = 0; k < 5; k = k + 1) begin 
+                    wire signed [7:0] a_val = A_flat[(i*40) + (k*8) +: 8]; 
+                    wire signed [7:0] b_val = B_flat[(k*40) + (j*8) +: 8]; 
+                    assign prod[k] = bit_mult(a_val, b_val); // OBS: a multplicação acontece aqui.
+                end
 
-        temp[2] = (A_flat[(row*40) + 7 -: 8]   * B_flat[23:16])  +
-                  (A_flat[(row*40) + 15 -: 8]  * B_flat[63:56])  +
-                  (A_flat[(row*40) + 23 -: 8] * B_flat[103:96]) +
-                  (A_flat[(row*40) + 31 -: 8] * B_flat[143:136]) +
-                  (A_flat[(row*40) + 39 -: 8] * B_flat[183:176]);
-
-        temp[3] = (A_flat[(row*40) + 7 -: 8]   * B_flat[31:24])  +
-                  (A_flat[(row*40) + 15 -: 8]  * B_flat[71:64])  +
-                  (A_flat[(row*40) + 23 -: 8] * B_flat[111:104]) +
-                  (A_flat[(row*40) + 31 -: 8] * B_flat[151:144]) +
-                  (A_flat[(row*40) + 39 -: 8] * B_flat[191:184]);
-
-        temp[4] = (A_flat[(row*40) + 7 -: 8]   * B_flat[39:32])  +
-                  (A_flat[(row*40) + 15 -: 8]  * B_flat[79:72])  +
-                  (A_flat[(row*40) + 23 -: 8] * B_flat[119:112]) +
-                  (A_flat[(row*40) + 31 -: 8] * B_flat[159:152]) +
-                  (A_flat[(row*40) + 39 -: 8] * B_flat[199:192]);
-
-        // Escreve os resultados em C_flat imediatamente
-        C_flat[(row * 40) + 7 -: 8]  <= temp[0][7:0];
-        C_flat[(row * 40) + 15 -: 8] <= temp[1][7:0];
-        C_flat[(row * 40) + 23 -: 8] <= temp[2][7:0];
-        C_flat[(row * 40) + 31 -: 8] <= temp[3][7:0];
-        C_flat[(row * 40) + 39 -: 8] <= temp[4][7:0];
-
-        // Verifica overflow
-       overflow_flag <= (temp[0] > 127 || temp[0] < -128) ||
-                         (temp[1] > 127 || temp[1] < -128) ||
-                         (temp[2] > 127 || temp[2] < -128) ||
-                         (temp[3] > 127 || temp[3] < -128) ||
-                         (temp[4] > 127 || temp[4] < -128);
-
-        // Atualiza row e verifica conclusão
-        if (row == 4) begin
-            row <= 0;
-            done <= 1;  // Sinaliza que o cálculo terminou
-        end else begin
-            row <= row + 1;
-            done <= 0;
+                
+                assign temp_sum = prod[0] + prod[1] + prod[2] + prod[3] + prod[4]; // soma dos produtos
+                assign temp[i*5 + j] = temp_sum; // resultado temporário
+    
+                assign C_flat[(i*40) + (j*8) +: 8] = temp[i*5 + j][7:0]; // Armazena de 8 em 8 bits
+                
+                assign overflow[i*5 + j] = (temp[i*5 + j] > 127) || (temp[i*5 + j] < -128); // armazena overflow
+            end
         end
-    end
+    endgenerate
+
+    
+    assign overflow_flag = |overflow; // verifica se houve pelo menos 1 overflow e ativa a flag
+
+    
+    function signed [15:0] bit_mult;
+        input signed [7:0] a, b;
+        begin
+            bit_mult = 0;
+            if (b[0]) bit_mult = bit_mult + a;         
+            if (b[1]) bit_mult = bit_mult + (a << 1);  
+            if (b[2]) bit_mult = bit_mult + (a << 2);   
+            if (b[3]) bit_mult = bit_mult + (a << 3);   
+            if (b[4]) bit_mult = bit_mult + (a << 4);   
+            if (b[5]) bit_mult = bit_mult + (a << 5);  
+            if (b[6]) bit_mult = bit_mult + (a << 6);   
+            if (b[7]) bit_mult = bit_mult - (a << 7);   
+        end
+    endfunction
+
 endmodule
