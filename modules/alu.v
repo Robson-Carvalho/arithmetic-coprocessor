@@ -21,8 +21,8 @@ module alu (
 
     // --- Declaração dos fios de saída de cada módulo ---
     wire [199:0] sum_C, sub_C, mul_C, opposite_C, transpose_C, scalar_C, determinant_C;
-    wire sum_ovf, sub_ovf, mul_ovf, opposite_ovf, scalar_ovf, determinant_ovf;
-    wire mul_done, determinant_done;
+    wire sum_ovf, sub_ovf, mul_ovf, scalar_ovf, determinant_ovf;
+    wire determinant_done;
 
      // --- Instanciação dos módulos ---
     alu_sum_module sum (
@@ -48,8 +48,7 @@ module alu (
 
     alu_opposite_module opposite (
         .A_flat(A_flat),
-        .C_flat(opposite_C),
-        .overflow_flag(opposite_ovf)
+        .C_flat(opposite_C)
     );
 
     alu_transpose_module transpose (
@@ -90,11 +89,9 @@ module alu (
             3'b011: begin  // Multiplicação
                 C_flat <= mul_C;
                 overflow_flag <= mul_ovf;
-                done <= mul_done;
             end
             3'b100: begin  // Matriz oposta
                 C_flat = opposite_C;
-                overflow_flag = opposite_ovf;
             end
             3'b101: begin  // Transposta
                 C_flat = transpose_C;
