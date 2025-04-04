@@ -10,13 +10,13 @@ module alu_multiplication_module (
 
     genvar i, j, k;
     generate
-        for (i = 0; i < 5; i = i + 1) begin 
-            for (j = 0; j < 5; j = j + 1) begin 
+        for (i = 0; i < 5; i = i + 1) begin : oi
+            for (j = 0; j < 5; j = j + 1) begin : oi2
                 wire signed [15:0] temp_sum; // somas temporárias
                 wire signed [15:0] prod [0:4]; // produtos parciais
 
                 
-                for (k = 0; k < 5; k = k + 1) begin 
+                for (k = 0; k < 5; k = k + 1) begin : oi3
                     wire signed [7:0] a_val = A_flat[(i*40) + (k*8) +: 8]; 
                     wire signed [7:0] b_val = B_flat[(k*40) + (j*8) +: 8]; 
                     assign prod[k] = bit_mult(a_val, b_val); // OBS: a multplicação acontece aqui.
@@ -48,7 +48,7 @@ module alu_multiplication_module (
             if (b[4]) bit_mult = bit_mult + (a << 4);   
             if (b[5]) bit_mult = bit_mult + (a << 5);  
             if (b[6]) bit_mult = bit_mult + (a << 6);   
-            if (b[7]) bit_mult = bit_mult - (a << 7);   
+            if (b[7]) bit_mult = bit_mult - (a << 7); // Caso especial para tratar o sinal no 8º bit. 
         end
     endfunction
 
