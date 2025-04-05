@@ -19,7 +19,7 @@ module alu (
 
     // --- Declaração dos fios de saída de cada módulo ---
     wire [7:0] determinant_number;
-    wire [199:0] sum_C, sub_C, mul_C, opposite_C, transpose_C, scalar_C;
+    wire [199:0] sum_C, sub_C, mul_C, opposite_C, t_ranspose_C, scalar_C;
     wire sum_ovf, sub_ovf, mul_ovf, scalar_ovf, determinant_ovf;
     wire determinant_done;
 

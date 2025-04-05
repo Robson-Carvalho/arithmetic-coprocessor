@@ -11,7 +11,10 @@ MODULES = \
     modules/alu_scalar_module.v \
     modules/alu.v \
     modules/determinant/alu_determinant_module.v \
-    modules/determinant/determinant2x2.v
+    modules/determinant/determinant2x2.v \
+    modules/determinant/determinant3x3.v \
+    modules/determinant/determinant4x4.v \
+    modules/determinant/determinant5x5.v \
 
 # Nome do arquivo de saída da simulação
 OUTPUT = test/simulation

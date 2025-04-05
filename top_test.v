@@ -113,14 +113,58 @@ module top_test();
         display_matrix(C_flat, n);
         $display("Overflow Flag = %b", overflow_flag);
 
-        opcode = 3'b111;
-        matrix_size = 3'b010;
-        #20; 
-        $display("\nDeterminante");
-        $display("A = ");
-        display_matrix(A_flat, n);
-        $display("Determinante = %d", number);
-        $display("Overflow Flag = %b", overflow_flag);
-        $finish;
+// Testes de Determinante
+    opcode = 3'b111;
+    
+    // Teste Determinante 2x2
+    matrix_size = 3'b010;
+    n = 3'b010;
+    // Posição    25 24 23 22 21 20 19 18 17 16 15 14 13 12 11 10 09 08 07 06 05 04 03 02 01
+    A_flat = 200'h00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_04_03_00_00_00_02_01;
+    #100; 
+    $display("\nDeterminante 2x2");
+    $display("A = ");
+    display_matrix(A_flat, n);
+    $display("Determinante = %d", $signed(number));
+    $display("Overflow Flag = %b", overflow_flag);
+
+    // Teste Determinante 3x3
+    matrix_size = 3'b011;
+    n = 3'b011;
+    // Posição    25 24 23 22 21 20 19 18 17 16 15 14 13 12 11 10 09 08 07 06 05 04 03 02 01
+    A_flat = 200'h00_00_00_00_00_00_07_06_03_07_00_07_07_03_32_00_07_07_03_07_00_06_06_06_06;
+    #100; 
+    $display("\nDeterminante 3x3");
+    $display("A = ");
+    display_matrix(A_flat, n);
+    $display("Determinante = %d", $signed(number));
+    $display("Overflow Flag = %b", overflow_flag);
+
+    // Teste Determinante 4x4
+    matrix_size = 3'b100;
+    n = 3'b100;
+    // Posição    25 24 23 22 21 20 19 18 17 16 15 14 13 12 11 10 09 08 07 06 05 04 03 02 01
+    A_flat = 200'h00_00_00_00_00_00_07_06_03_07_00_07_07_03_05_00_07_07_03_07_00_06_06_06_06;
+    #100; 
+    $display("\nDeterminante 4x4");
+    $display("A = ");
+    display_matrix(A_flat, n);
+    $display("Determinante = %d", $signed(number));
+    $display("Overflow Flag = %b", overflow_flag);
+
+    // Teste Determinante 5x5
+    matrix_size = 3'b101;
+    n = 3'b101;
+    // Posição    25 24 23 22 21 20 19 18 17 16 15 14 13 12 11 10 09 08 07 06 05 04 03 02 01
+    A_flat = 200'h01_03_03_03_03_00_01_00_00_00_00_00_03_00_00_00_00_00_01_00_02_02_02_02_32;
+    //A_flat = 200'h01_03_03_03_03_00_01_00_00_00_00_00_03_00_00_00_00_00_01_00_02_02_02_02_0A;
+    #100; 
+    $display("\nDeterminante 5x5");
+    $display("A = ");
+    display_matrix(A_flat, n);
+    $display("Determinante = %d", $signed(number));
+    $display("Overflow Flag = %b", overflow_flag);
+    
+    $finish;
     end
 endmodule
