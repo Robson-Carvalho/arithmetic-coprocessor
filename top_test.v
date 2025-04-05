@@ -2,8 +2,10 @@ module top_test();
     reg [199:0] A_flat;
     reg [199:0] B_flat;
     wire [199:0] C_flat;
+    wire [7:0] number;
+    reg [2:0] matrix_size;
     reg [2:0] n;
-    reg [7:0] f;
+    reg [7:0] scalar;
     reg [2:0] opcode;
     reg clock;
     wire overflow_flag; 
@@ -19,10 +21,12 @@ module top_test();
     alu module_alu (
         .A_flat(A_flat),
         .B_flat(B_flat),
-        .f(f),
+        .scalar(scalar),
         .opcode(opcode),
         .clock(clock),
         .C_flat(C_flat),
+        .matrix_size(matrix_size),
+        .number(number),
         .overflow_flag(overflow_flag),
         .done(done)
     );
@@ -44,71 +48,14 @@ module top_test();
     endtask
 
     initial begin
-        // A_flat = 200'h07070707070707070707070707060509010203040604030203; 
-        // B_flat = 200'h0000000000000000000000000000000000000000FEFC00FD00;
-        A_flat = 200'h000000000000000000000000000000000000000A0000000014; // trocar 14 por 0A para não ter overflow.
-        B_flat = 200'h00000000000000000000000000000000000000000000000008;
-        n = 3'b011;
+        // Posição    25 24 23 22 21 20 19 18 17 16 15 14 13 12 11 10 09 08 07 06 05 04 03 02 01
+        A_flat = 200'h00_00_00_00_00_00_00_00_00_00_00_00_01_00_00_00_00_00_02_02_00_03_40_02_E4;
+        B_flat = 200'h00_00_00_00_00_00_00_00_00_00_00_00_01_00_00_00_00_00_02_02_00_CF_00_02_00;
+        n = 3'b101;
 
-        // // Teste 6 - Produto por escalar: 110
-        // $display("\nTeste 6: Produto por escalar (opcode 110)");
-        // opcode = 3'b110;
-        // f = 8'b00000010;
-        // #20; // Espera 1 ciclo completo
-        // $display("A = ");
-        // display_matrix(A_flat, n);
-        // $display("Valor = %d", $signed(f));
-        // $display("C = ");
-        // display_matrix(C_flat, n);
-        // $display("Overflow Flag = %b", overflow_flag);
-
-        // // Teste 1 - Soma: 001
-        // $display("\nTeste 1: Soma (opcode 001)");
-        // opcode = 3'b001;
-        // #20; // Espera 1 ciclo completo
-        // $display("A = ");
-        // display_matrix(A_flat, n);
-        // $display("B = ");
-        // display_matrix(B_flat, n);
-        // $display("C = ");
-        // display_matrix(C_flat, n);
-        // $display("Overflow Flag = %b", overflow_flag);
-
-        // // Teste 2 - Subtração: 010
-        // $display("\nTeste 2: Subtração (opcode 010)");
-        // opcode = 3'b010;
-        // #20; // Espera 1 ciclo completo
-        // $display("A = ");
-        // display_matrix(A_flat, n);
-        // $display("B = ");
-        // display_matrix(B_flat, n);
-        // $display("C = ");
-        // display_matrix(C_flat, n);
-        // $display("Overflow Flag = %b", overflow_flag);
-
-        // Teste 3 - Oposta: 100
-        $display("\nTeste 3: Oposta (opcode 100)");
-        opcode = 3'b100;
-        #20; // Espera 1 ciclo completo
-        $display("A = ");
-        display_matrix(A_flat, n);
-        $display("C = ");
-        display_matrix(C_flat, n);
-        $display("Overflow Flag = %b", overflow_flag);
-
-        // // Teste 4 - Transposta: 101
-        // $display("\nTeste 4: Transposta (opcode 101)");
-        // opcode = 3'b101;
-        // #20; // Espera 1 ciclo completo
-        // $display("A = ");
-        // display_matrix(A_flat, n);
-        // $display("C = ");
-        // display_matrix(C_flat, n);
-
-        // Teste 5 - Multiplicação: 011
-        $display("\nMultiplicação (opcode 011)");
-        opcode = 3'b011;
-        #20; // Espera 5 ciclos completos (5 * 20)
+        opcode = 3'b001;
+        #20; 
+        $display("\nSoma");
         $display("A = ");
         display_matrix(A_flat, n);
         $display("B = ");
@@ -117,16 +64,63 @@ module top_test();
         display_matrix(C_flat, n);
         $display("Overflow Flag = %b", overflow_flag);
 
-        // // Teste 7 - Determinante: 111
-        // $display("\nTeste 7: Determinante (opcode 111)");
-        // opcode = 3'b111;
-        // #20; // Espera 1 ciclo completo (assumindo que o determinante é de 1 ciclo)
-        // $display("A = ");
-        // display_matrix(A_flat, n);
-        // $display("C = ");
-        // display_matrix(C_flat, n);
-        // $display("Overflow Flag = %b", overflow_flag);
+        opcode = 3'b010;
+        #20; 
+        $display("\nSubtração");
+        $display("A = ");
+        display_matrix(A_flat, n);
+        $display("B = ");
+        display_matrix(B_flat, n);
+        $display("C = ");
+        display_matrix(C_flat, n);
+        $display("Overflow Flag = %b", overflow_flag);
 
+        opcode = 3'b011;
+        #20; 
+        $display("\nMultiplicação");
+        $display("A = ");
+        display_matrix(A_flat, n);
+        $display("B = ");
+        display_matrix(B_flat, n);
+        $display("C = ");
+        display_matrix(C_flat, n);
+        $display("Overflow Flag = %b", overflow_flag);
+
+        opcode = 3'b100;
+        #20; 
+        $display("\nOposta");
+        $display("A = ");
+        display_matrix(A_flat, n);
+        $display("C = ");
+        display_matrix(C_flat, n);
+
+        opcode = 3'b101;
+        #20; 
+        $display("\nTransposta");
+        $display("A = ");
+        display_matrix(A_flat, n);
+        $display("C = ");
+        display_matrix(C_flat, n);
+
+        opcode = 3'b110;
+        scalar = 8'b00000010;
+        #20; 
+        $display("\nEscalar");
+        $display("A = ");
+        display_matrix(A_flat, n);
+        $display("Escalar = %d", scalar);
+        $display("C = ");
+        display_matrix(C_flat, n);
+        $display("Overflow Flag = %b", overflow_flag);
+
+        opcode = 3'b111;
+        matrix_size = 3'b010;
+        #20; 
+        $display("\nDeterminante");
+        $display("A = ");
+        display_matrix(A_flat, n);
+        $display("Determinante = %d", number);
+        $display("Overflow Flag = %b", overflow_flag);
         $finish;
     end
 endmodule

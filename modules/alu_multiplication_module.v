@@ -26,7 +26,7 @@ module alu_multiplication_module (
                 assign temp_sum = prod[0] + prod[1] + prod[2] + prod[3] + prod[4]; // soma dos produtos
                 assign temp[i*5 + j] = temp_sum; // resultado temporário
     
-                assign C_flat[(i*40) + (j*8) +: 8] = temp[i*5 + j][7:0]; // Armazena de 8 em 8 bits
+                assign C_flat[(i*40) + (j*8) +: 8] = temp[i*5 + j][7:0]; // Armazena 8 bits de uma vez na posição correta da matriz.
                 
                 assign overflow[i*5 + j] = (temp[i*5 + j] > 127) || (temp[i*5 + j] < -128); // armazena overflow
             end

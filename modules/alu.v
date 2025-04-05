@@ -1,30 +1,38 @@
 module alu (
-    // Matrizes de entrada para operação
+    // dados entrada
+    input clock,
+    input [2:0] opcode,
+    input [2:0] matrix_size,
     input [199:0] A_flat,
     input [199:0] B_flat,
+    input [7:0] scalar,
 
-    // Decimal de entrada do módulo ALU
-    input [7:0] f,
-
-    // Código de operação para o módulo ALU
-    input [2:0] opcode,
-
-    // Clock
-    input clock,
-
-    // C_flat é um output reg, uma vez que seu valor é alterado dentro de um bloco always
+    // dados saída
     output reg [199:0] C_flat,
-    // Flags de saída, sinalizando ocorrência de overflow e finalização da operação
+    output reg [7:0] number,
+
+
+    // sinais
     output reg overflow_flag,
     output reg done
 );
 
     // --- Declaração dos fios de saída de cada módulo ---
-    wire [199:0] sum_C, sub_C, mul_C, opposite_C, transpose_C, scalar_C, determinant_C;
+    wire [7:0] determinant_number;
+    wire [199:0] sum_C, sub_C, mul_C, opposite_C, transpose_C, scalar_C;
     wire sum_ovf, sub_ovf, mul_ovf, scalar_ovf, determinant_ovf;
     wire determinant_done;
 
      // --- Instanciação dos módulos ---
+     alu_determinant_module determinant (
+        .clock(clock),
+        .A_flat(A_flat),
+        .matrix_size(matrix_size),
+        .number(determinant_number),
+        .overflow_flag(determinant_ovf),
+        .done(determinant_done)
+    );
+
     alu_sum_module sum (
         .A_flat(A_flat),
         .B_flat(B_flat),
@@ -58,21 +66,14 @@ module alu (
 
     alu_scalar_module scalar_mult (
         .A_flat(A_flat),
-        .scalar(f),
+        .scalar(scalar),
         .C_flat(scalar_C),
         .overflow_flag(scalar_ovf)
     );
 
-     alu_determinant_module determinant (
-        .A_flat(A_flat),
-        .C_flat(determinant_C),
-        .overflow_flag(determinant_ovf),
-        .done(determinant_done)
-    );
-
 
     // Sempre que o opcode for alterado, realiza-se a operação especificada
-    always @(posedge clock) begin
+    always @(posedge clock) begin    
         C_flat = 200'b0;
         overflow_flag = 1'b0;
         done = 1'b0;
@@ -101,14 +102,14 @@ module alu (
                 overflow_flag = scalar_ovf;
             end
             3'b111: begin  // Determinante
-                C_flat = 200'b0;
-                overflow_flag = 1'b0;
-                done = 1'b0;
+                number = determinant_number;
+                overflow_flag = determinant_ovf;
+                done = determinant_done;
             end
             default: begin // Caso inválido
                 C_flat = 200'b0;
                 overflow_flag = 1'b0;
-                done = 1'b0;
+                done = 1'b1;
             end
         endcase
     end

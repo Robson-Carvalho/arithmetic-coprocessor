@@ -9,8 +9,9 @@ MODULES = \
     modules/alu_opposite_module.v \
     modules/alu_transpose_module.v \
     modules/alu_scalar_module.v \
-    modules/alu_determinant_module.v \
-    modules/alu.v
+    modules/alu.v \
+    modules/determinant/alu_determinant_module.v \
+    modules/determinant/determinant2x2.v
 
 # Nome do arquivo de saída da simulação
 OUTPUT = test/simulation
