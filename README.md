@@ -1,5 +1,18 @@
 # Relatório Técnico - Projeto em FPGA com Verilog
 
+## Sumário
+
+- [Objetivos e Requisitos do Problema](#objetivos-e-requisitos-do-problema)
+- [Recursos Utilizados](#recursos-utilizados)
+  - [Quartus Prime](#quartus-prime)
+  - [FPGA DE1-SoC](#fpga-de1-soc)
+  - [Icarus Verilog](#icarus-verilog)
+- [Desenvolvimento e Descrição em Alto Nível](#desenvolvimento-e-descrição-em-alto-nível)
+  - [Unidade de Controle](#unidade-de-controle)
+  - [ULA (Unidade Lógica e Aritmética)](#ula-unidade-lógica-e-aritmética)
+- [Testes, Simulações, Resultados e Discussões](#testes-simulações-resultados-e-discussões)
+
+
 ## Introdução
 
 Introduzir de maneira suscinta o contexto do problema.
