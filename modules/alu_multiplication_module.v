@@ -10,13 +10,13 @@ module alu_multiplication_module (
 
     genvar i, j, k;
     generate
-        for (i = 0; i < 5; i = i + 1) begin : oi
-            for (j = 0; j < 5; j = j + 1) begin : oi2
+        for (i = 0; i < 5; i = i + 1) begin : row_mult
+            for (j = 0; j < 5; j = j + 1) begin : col_mult
                 wire signed [15:0] temp_sum; // somas temporárias
                 wire signed [15:0] prod [0:4]; // produtos parciais
 
                 
-                for (k = 0; k < 5; k = k + 1) begin : oi3
+                for (k = 0; k < 5; k = k + 1) begin : mult
                     wire signed [7:0] a_val = A_flat[(i*40) + (k*8) +: 8]; 
                     wire signed [7:0] b_val = B_flat[(k*40) + (j*8) +: 8]; 
                     assign prod[k] = bit_mult(a_val, b_val); // OBS: a multplicação acontece aqui.

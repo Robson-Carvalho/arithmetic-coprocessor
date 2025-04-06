@@ -75,6 +75,9 @@ module top_test();
         display_matrix(C_flat, n);
         $display("Overflow Flag = %b", overflow_flag);
 
+
+        A_flat = 200'h01_01_01_01_01_01_01_01_01_01_01_01_01_01_01_01_01_01_01_01_01_01_01_01_01;
+        B_flat = 200'h02_02_02_02_02_02_02_02_02_02_02_02_02_02_02_02_02_02_02_02_02_02_02_02_02;
         opcode = 3'b011;
         #20; 
         $display("\nMultiplicação");
