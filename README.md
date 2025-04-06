@@ -1,5 +1,9 @@
 # Relatório Técnico - Projeto em FPGA com Verilog
 
+## Introdução
+
+Introduzir de maneira suscinta o contexto do problema.
+
 ## Objetivos e Requisitos do Problema
 
 Descrever de forma clara e objetiva:
