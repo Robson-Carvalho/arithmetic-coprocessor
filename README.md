@@ -59,5 +59,16 @@ Explicar como o sistema foi desenvolvido, com foco na estrutura geral, divisão 
 - Analisar o desempenho do sistema e a correção das funcionalidades.
 - Como lidar com limitações ou melhorias futuras, comente aqui também.
 
+## Colaboradores
+
+Este projeto foi desenvolvido por:
+
+- [**Guilherme Fernandes Sardinha**](https://github.com/DrizinCoder) – desenvolvimento da Unidade de controle, simulações/testes e escrita do relatório  
+- [**Robson Carvalho de Souza**](https://github.com/Robson-Carvalho) – lógica da ULA, simulações/testes e escrita do relatório
+- [**Lucas Damasceno da Conceição**] – suporte na ULA e escrita do relatório  
+
+Agradecimentos ao(a) professor(a) [**Wild Freitas da Silva Santos**] pela orientação.
+
+
 ---
 
