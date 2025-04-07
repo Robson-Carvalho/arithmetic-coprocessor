@@ -70,7 +70,7 @@ As instruções possuem um tamanho fixo de 8 bits e a estrutura das instruções
 
 ![Formato da instrução](images/Diagrama%20de%20blocos%20(14).jpg)
 
-Os campos da instruçã são definidos por:
+Os campos da instrução são definidos por:
 | Atributo | Descrição |
 |----------|-----------|
 | **MT**   | Matriz alvo do carregamento (A ou B) |
@@ -169,7 +169,8 @@ O banco de registradores é uma subdivisão essencial em qualquer co-processador
 #### Diagrama Funcional
 
 ---
-![Diagrama Banco de Registradores](images/BancoDeReg.png)
+<img src="images/BancoDeReg.png" width="200"/>
+
 ---
 
 #### Tipos de Registradores
