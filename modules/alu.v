@@ -71,7 +71,7 @@ module alu (
     );
 
     // Sempre que o opcode for alterado, realiza-se a operação especificada
-    always @(posedge clock) begin    
+    always @(*) begin    
         C_flat = 200'b0;             // Zera a saída
         overflow_flag = 1'b0;        // Zera o sinal de overflow
         done = 1'b0;                 // Zera o sinal de done

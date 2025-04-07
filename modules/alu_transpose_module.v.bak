@@ -3,6 +3,10 @@ module alu_transpose_module(
   output [199:0] C_flat         // Saída: matriz transposta de A, também achatada
 );
 
+  assign overflow_flag = 1'b0;  // (Comentário: essa linha está errada pois não existe a porta overflow_flag na definição do módulo)
+
+  assign done = 1'b1;           // (Comentário: essa linha também está errada pois 'done' não é declarado como saída)
+
   // Declaração de variáveis para gerar laços
   genvar i, j;
   generate
