@@ -56,12 +56,66 @@ Comentar sobre o uso das ferramenta para simulação:
 
 ## Desenvolvimento e Descrição em Alto Nível
 
-Explicar como o sistema foi desenvolvido, com foco na estrutura geral, divisão de módulos e lógica do projeto.
-
 ### Unidade de Controle
-- Descrição da lógica da unidade de controle.
-- Quais sinais ela gera e com que propósito.
-- Como interage com outros módulos.
+
+A **unidade de controle** é o componente responsável por processar as instruções, gerenciar o fluxo de dados e coordenar os outros componentes internos, funcionando como um organizador geral do sistema. Sua função é crucial para garantir a execução eficiente das operações, especialmente no contexto de processamentos matriciais.
+
+A unidade de controle gerencia a comunicação entre a **memória RAM**, que armazena as matrizes a serem manipuladas, e os demais componentes, como a **ULA (Unidade Lógica e Aritmética)**, responsável pelo processamento aritmético das matrizes. Ela também desempenha um papel fundamental na **sincronização geral do sistema**, garantindo que todas as operações ocorram no tempo correto e de maneira ordenada.
+
+Em termos de desempenho, a unidade de controle é o "cérebro" do sistema, sendo responsável por organizar e orquestrar as etapas de cada operação matricial. Ela garante que os dados sejam lidos da memória na ordem correta, que as operações sejam executadas corretamente pela ULA e que o fluxo de controle seja mantido sem erros durante o processamento das matrizes.
+
+### Instruction Set Architecture
+As instruções desenvolvidas para o coprocessador seguem um padrão uniforme para todos os tipos de operações realizadas, sejam elas de transferência de dados ou operações aritméticas. Essa decisão de projeto foi tomada com o objetivo de simplificar a complexidade associada à implementação das instruções, assegurando que a etapa de decodificação fosse generalizada e simplificada.
+As instruções possuem um tamanho fixo de 8 bits e a estrutura das instruções é organizada da seguinte forma:
+
+![Formato da instrução](https://br.pinterest.com/pin/725924033725138267)
+Os campos da instruçã são definidos por:
+| Atributo | Descrição |
+|----------|-----------|
+| **MT**   | Matriz alvo do carregamento (A ou B) |
+| **M_Size** | Tamanho da matriz utilizado por operações de movimentação de dados e aritméticas |
+| **OPCODE** | Código de operação |
+
+Conjunto de instruções do coprocessador:
+### Instruções aritméticas e seus Códigos Hexadecimais
+
+| Instrução       | Código Hexadecimal |
+|-----------------|--------------------|
+| **Soma**        | `0x01`             |
+| **Subtração**   | `0x02`             |
+| **Multiplicação**| `0x03`            |
+| **Multiplicação por número inteiro** | `0x04` |
+| **Transposição** | `0x05`             |
+| **Matriz Oposta**| `0x06`            |
+| **Determinante 2x2** | `0x17`             |
+| **Determinante 3x3** | `0x1F`             |
+| **Determinante 4x4** | `0x27`             |
+| **Determinante 5x5** | `0x2F`             |
+
+### Instruções de movimentação de dados e seus Códigos Hexadecimais
+
+| Instrução       | Código Hexadecimal |
+|-----------------|--------------------|
+| **Carregar matriz A 2x2** | `0x10`             |
+| **Carregar matriz A 3x3** | `0x18`             |
+| **Carregar matriz A 4x4** | `0x20`             |
+| **Carregar matriz A 5x5** | `0x28`             |
+| **Carregar matriz B 2x2** | `0x50`             |
+| **Carregar matriz B 3x3** | `0x58`             |
+| **Carregar matriz B 4x4** | `0x60`             |
+| **Carregar matriz B 5x5** | `0x68`             |
+
+### Etapas de processamento
+
+### Fluxos de execução
+
+### Banco de Registradores
+
+## Módulo de memória
+
+### Leitura e escrita dos dados a partir da memória
+
+### Sincronização
 
 ### ULA (Unidade Lógica e Aritmética)
 - Operações suportadas.
