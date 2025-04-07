@@ -427,8 +427,20 @@ module top_test();
         
         // Determinant (should be product of diagonal)
         opcode = 3'b111;
-        #10;
+        #100;
         $display("\n5x5 Determinant Test 2 (Triangular Matrix)");
+        $display("A = ");
+        display_matrix(A_flat, n);
+        $display("Determinante = %d", $signed(number));
+        $display("Overflow Flag = %b", overflow_flag);
+
+        // Test case 3 for 5x5 (triangular matrix)
+        A_flat = 200'h01_00_00_00_00_00_01_00_00_00_00_00_01_00_00_00_00_00_01_00_00_00_00_00_01;
+        
+        // Determinant (should be product of diagonal)
+        opcode = 3'b111;
+        #100;
+        $display("\n5x5 Determinant Test 3 (Triangular Matrix)");
         $display("A = ");
         display_matrix(A_flat, n);
         $display("Determinante = %d", $signed(number));
