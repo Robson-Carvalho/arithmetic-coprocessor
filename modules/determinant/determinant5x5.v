@@ -1,12 +1,12 @@
 module determinant5x5 (
-    input [199:0] A_flat,
-    input clock,
-    output reg signed [7:0] det,
-    output reg done,
-    output reg overflow_flag
+    input [199:0] A_flat,             // Entrada: matriz 5x5 achatada (25 elementos de 8 bits)
+    input clock,                      // Clock para sincronizar a operação
+    output reg signed [7:0] det,      // Saída: determinante (8 bits com sinal)
+    output reg done,                  // Sinal de conclusão da operação
+    output reg overflow_flag          // Flag de overflow (caso o determinante extrapole 8 bits)
 );
 
-    // Função de multiplicação por deslocamento de bits
+    // Função para multiplicação de dois números de 8 bits com sinal (simula multiplicação por somas e shifts)
     function signed [15:0] bit_mult;
         input signed [7:0] a;
         input signed [7:0] b;
@@ -20,12 +20,12 @@ module determinant5x5 (
             if (b[4]) result = result + (a << 4);
             if (b[5]) result = result + (a << 5);
             if (b[6]) result = result + (a << 6);
-            if (b[7]) result = result - (a << 7);
+            if (b[7]) result = result - (a << 7);  // Bit de sinal
             bit_mult = result;
         end
     endfunction
 
-    // Função determinante 3x3
+    // Função para cálculo do determinante de uma matriz 3x3 usando a regra de Sarrus expandida
     function signed [31:0] det3x3;
         input signed [7:0] a, b, c, d, e, f, g, h, i;
         reg signed [31:0] aei, bfg, cdh, ceg, bdi, afh;
@@ -40,7 +40,7 @@ module determinant5x5 (
         end
     endfunction
 
-    // Função determinante 4x4
+    // Função para cálculo do determinante de uma matriz 4x4 usando co-fatores (expansão de Laplace)
     function signed [31:0] det4x4;
         input signed [7:0] a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p;
         reg signed [31:0] det3x3_1, det3x3_2, det3x3_3, det3x3_4;
@@ -52,18 +52,18 @@ module determinant5x5 (
             det3x3_4 = det3x3(e, f, g, i, j, k, m, n, o);
             
             result = bit_mult(a, det3x3_1) - bit_mult(b, det3x3_2) + 
-                    bit_mult(c, det3x3_3) - bit_mult(d, det3x3_4);
+                     bit_mult(c, det3x3_3) - bit_mult(d, det3x3_4);
             det4x4 = result;
         end
     endfunction
 
-    // Registradores para os elementos da matriz
+    // Declaração dos elementos individuais da matriz 5x5 (25 elementos de 8 bits com sinal)
     reg signed [7:0] a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y;
-    reg signed [31:0] det_result;
+    reg signed [31:0] det_result;  // Resultado intermediário de 32 bits do determinante
 
-    // Lógica combinacional para cálculo do determinante
+    // Bloco always sensível a qualquer mudança (combinacional) para extrair os dados e calcular o determinante
     always @(*) begin
-        // Extração dos elementos com conversão explícita para signed
+        // Extração dos elementos da matriz achatada A_flat para variáveis individuais (linha por linha)
         a = $signed(A_flat[7:0]);
         b = $signed(A_flat[15:8]);
         c = $signed(A_flat[23:16]);
@@ -89,51 +89,45 @@ module determinant5x5 (
         w = $signed(A_flat[183:176]);
         x = $signed(A_flat[191:184]);
         y = $signed(A_flat[199:192]);
-        
-        // Cálculo do determinante usando expansão por Laplace
-        // Cálculo correto do determinante usando expansão por Laplace
-det_result = 
-    bit_mult(a, det4x4(
-        // Submatriz excluindo linha 1 e coluna 1
-        g, h, i, j,
-        l, m, n, o,
-        q, r, s, t,
-        v, w, x, y
-    )) -
-    bit_mult(b, det4x4(
-        // Submatriz excluindo linha 1 e coluna 2
-        f, h, i, j,
-        k, m, n, o,
-        p, r, s, t,
-        u, w, x, y
-    )) +
-    bit_mult(c, det4x4(
-        // Submatriz excluindo linha 1 e coluna 3
-        f, g, i, j,
-        k, l, n, o,
-        p, q, s, t,
-        u, v, x, y
-    )) -
-    bit_mult(d, det4x4(
-        // Submatriz excluindo linha 1 e coluna 4
-        f, g, h, j,
-        k, l, m, o,
-        p, q, r, t,
-        u, v, w, y
-    )) +
-    bit_mult(e, det4x4(
-        // Submatriz excluindo linha 1 e coluna 5
-        f, g, h, i,
-        k, l, m, n,
-        p, q, r, s,
-        u, v, w, x
-    ));
+
+        // Expansão de Laplace na primeira linha da matriz 5x5
+        det_result = 
+            bit_mult(a, det4x4(
+                g, h, i, j,
+                l, m, n, o,
+                q, r, s, t,
+                v, w, x, y
+            )) -
+            bit_mult(b, det4x4(
+                f, h, i, j,
+                k, m, n, o,
+                p, r, s, t,
+                u, w, x, y
+            )) +
+            bit_mult(c, det4x4(
+                f, g, i, j,
+                k, l, n, o,
+                p, q, s, t,
+                u, v, x, y
+            )) -
+            bit_mult(d, det4x4(
+                f, g, h, j,
+                k, l, m, o,
+                p, q, r, t,
+                u, v, w, y
+            )) +
+            bit_mult(e, det4x4(
+                f, g, h, i,
+                k, l, m, n,
+                p, q, r, s,
+                u, v, w, x
+            ));
     end
 
-    // Atualização dos registradores na borda de subida do clock
+    // Bloco sequencial sensível à borda de subida do clock
     always @(posedge clock) begin
-        det <= det_result[7:0];
-        overflow_flag <= (det_result > 127) || (det_result < -128);
-        done <= 1'b1;
+        det <= det_result[7:0];  // Atribui os 8 bits menos significativos do resultado à saída 'det'
+        overflow_flag <= (det_result > 127) || (det_result < -128);  // Detecta overflow fora do intervalo de 8 bits com sinal
+        done <= 1'b1;  // Sinaliza que a operação foi concluída
     end
 endmodule

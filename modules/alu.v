@@ -1,27 +1,26 @@
 module alu (
     // dados entrada
-    input clock,
-    input [2:0] opcode,
-    input [2:0] matrix_size,
-    input [199:0] A_flat,
-    input [199:0] B_flat,
-    input [7:0] scalar,
+    input clock,                     // Sinal de clock
+    input [2:0] opcode,              // Código da operação a ser realizada
+    input [2:0] matrix_size,         // Tamanho da matriz (ex: 2x2, 3x3...)
+    input [199:0] A_flat,            // Matriz A "achatada" em 1D
+    input [199:0] B_flat,            // Matriz B "achatada" em 1D
+    input [7:0] scalar,              // Valor escalar para multiplicação
 
     // dados saída
-    output reg [199:0] C_flat,
-    output reg [7:0] number,
-
+    output reg [199:0] C_flat,       // Resultado da operação entre A e B
+    output reg [7:0] number,         // Saída numérica (usada para o determinante)
 
     // sinais
-    output reg overflow_flag,
-    output reg done
+    output reg overflow_flag,        // Indica estouro (overflow)
+    output reg done                  // Indica que a operação foi concluída
 );
 
     // --- Declaração dos fios de saída de cada módulo ---
-    wire [7:0] determinant_number;
-    wire [199:0] sum_C, sub_C, mul_C, opposite_C, t_ranspose_C, scalar_C;
-    wire sum_ovf, sub_ovf, mul_ovf, scalar_ovf, determinant_ovf;
-    wire determinant_done;
+    wire [7:0] determinant_number;          // Valor do determinante
+    wire [199:0] sum_C, sub_C, mul_C, opposite_C, transpose_C, scalar_C; // Resultados intermediários
+    wire sum_ovf, sub_ovf, mul_ovf, scalar_ovf, determinant_ovf;          // Flags de overflow
+    wire determinant_done;                  // Flag de conclusão do módulo determinante
 
      // --- Instanciação dos módulos ---
      alu_determinant_module determinant (
@@ -71,12 +70,11 @@ module alu (
         .overflow_flag(scalar_ovf)
     );
 
-
     // Sempre que o opcode for alterado, realiza-se a operação especificada
     always @(posedge clock) begin    
-        C_flat = 200'b0;
-        overflow_flag = 1'b0;
-        done = 1'b0;
+        C_flat = 200'b0;             // Zera a saída
+        overflow_flag = 1'b0;        // Zera o sinal de overflow
+        done = 1'b0;                 // Zera o sinal de done
 
         case (opcode)
             3'b001: begin  // Soma
