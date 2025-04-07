@@ -427,7 +427,7 @@ module top_test();
         
         // Determinant (should be product of diagonal)
         opcode = 3'b111;
-        #100;
+        #10;
         $display("\n5x5 Determinant Test 2 (Triangular Matrix)");
         $display("A = ");
         display_matrix(A_flat, n);
