@@ -108,6 +108,35 @@ Conjunto de instruções do coprocessador:
 
 ### Etapas de processamento
 
+As etapas de processamento do sistema são definidas por meio de uma máquina de estados finitos (FSM), responsável por receber e interpretar as instruções. Para o desenvolvimento dessa parte, foi necessário compreender como co-processadores realizam o recebimento e a execução de comandos. A partir desse estudo, foram definidos os seguintes estágios da FSM de processamento:
+
+---
+
+#### - Fetch  
+O estado Fetch representa a etapa inicial do fluxo de processamento. Sua principal função é realizar a busca da instrução na memória. No sistema implementado, essa busca ocorre no endereço 0x0, reservado exclusivamente para o armazenamento da instrução atual.  
+A FSM aguarda um sinal de controle denominado "start process”, que indica a alocação de uma nova instrução no endereço especificado. Ao receber esse sinal, a FSM extrai os dados da posição de memória e os transfere para um registrador interno, o qual será utilizado na etapa seguinte do processamento.
+
+---
+
+#### - Decode  
+O estado Decode tem como função interpretar a instrução capturada durante a etapa de Fetch. Nessa fase, o sistema realiza a separação dos campos presentes na instrução e os aloca em registradores de controle apropriados. Esses registradores são essenciais para orientar o fluxo de dados e definir o comportamento da máquina nas etapas subsequentes do processamento.
+
+---
+
+#### - Execute  
+O estado Execute é responsável por processar as informações contidas na instrução decodificada. Nessa etapa, o coprocessador realiza operações de leitura na memória ou delega à ULA (Unidade Lógica e Aritmética) a execução das operações aritméticas sobre as matrizes. Trata-se da fase central de todo o sistema, onde as instruções são efetivamente aplicadas, garantindo que os cálculos e movimentações de dados ocorram de forma correta e consistente.
+
+---
+
+#### - WriteBack  
+O estado de writeback é responsável por escrever na memória a matriz resultante do processamento aritmético. Essa etapa assegura que os dados processados pela ULA estejam disponíveis para o processador no endereço de memória adequado.
+
+---
+
+#### - CleanUP  
+O estado CleanUP é responsável por reiniciar todos os registradores de controle da FSM, assegurando que o processamento não seja comprometido por resíduos de dados anteriores. A inclusão deste estágio mostrou-se vantajosa para evitar possíveis erros de metaestabilidade e garantir um ambiente limpo para a próxima operação. Após a conclusão desta etapa, o sistema retorna ao estado Fetch, aguardando uma nova sinalização de início de processamento.
+
+
 ### Fluxos de execução
 
 ### Banco de Registradores
