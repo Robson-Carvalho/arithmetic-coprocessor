@@ -137,7 +137,30 @@ O estado de writeback é responsável por escrever na memória a matriz resultan
 O estado CleanUP é responsável por reiniciar todos os registradores de controle da FSM, assegurando que o processamento não seja comprometido por resíduos de dados anteriores. A inclusão deste estágio mostrou-se vantajosa para evitar possíveis erros de metaestabilidade e garantir um ambiente limpo para a próxima operação. Após a conclusão desta etapa, o sistema retorna ao estado Fetch, aguardando uma nova sinalização de início de processamento.
 
 
-### Fluxos de execução
+### Fluxos de Execução da FSM
+
+O sistema possui dois fluxos de execução distintos que ocorrem na FSM, ambos projetados para realizar as operações de maneira otimizada, evitando desperdício de ciclos e assegurando um processamento eficiente.
+
+---
+
+#### Primeiro Fluxo: Leitura de Matrizes
+
+O primeiro fluxo diz respeito à leitura das matrizes a partir da memória. Nesse processo de movimentação de dados, não há necessidade de realizar escrita, uma vez que ainda não foram processadas informações. Para evitar o uso desnecessário de ciclos e otimizar a execução, o processador segue o seguinte caminho:
+
+**Fetch → Decode → Execute → CleanUp**
+
+Essa abordagem garante agilidade ao evitar a passagem por estados que não são essenciais neste contexto específico.
+
+---
+
+#### Segundo Fluxo: Processamento Aritmético
+
+O segundo fluxo está relacionado ao processamento aritmético das matrizes. Após a realização das operações, a matriz resultante deve ser armazenada novamente na memória. Para isso, o estado `WriteBack` é ativado, realizando a escrita dos dados no local apropriado. O fluxo de execução neste caso é:
+
+**Fetch → Decode → Execute → WriteBack → CleanUp**
+
+Essa decisão de projeto foi adotada com o intuito de evitar o trânsito desnecessário dos dados por estágios irrelevantes ao seu tipo de operação, otimizando o tempo de execução e assegurando maior eficiência no processamento.
+
 
 ### Banco de Registradores
 
