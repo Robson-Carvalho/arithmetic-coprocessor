@@ -20,6 +20,8 @@ Coprocessadores são componentes de hardware que atuam em conjunto com a CPU (Ce
 
 Esse projeto visa explorar os recursos da FPGA **DE1-SoC**, utilizando **descrição em Verilog** para projetar um sistema digital capaz de realizar operações fundamentais no processamento de matrizes. A escolha de implementar esse tipo de operação está relacionada à ampla aplicação em áreas como processamento de imagem, álgebra linear, simulações numéricas, aprendizado de máquina, entre outras.
 
+## Objetivos e Requisitos do Problema
+
 O coprocessador foi planejado com foco em **desempenho**, utilizando **paralelismo em nível de hardware** para otimizar o tempo de execução das operações. Além disso, a compatibilidade com os dispositivos da DE1-SoC garante a viabilidade prática do projeto no ambiente de desenvolvimento utilizado.
 
 ### Requisitos do Projeto
@@ -35,13 +37,8 @@ O coprocessador foi planejado com foco em **desempenho**, utilizando **paralelis
    - Transposição  
    - Geração da matriz oposta  
 4. Cada elemento da matriz é representado por um número de **8 bits (1 byte)**.  
-5. O processador deve implementar **paralelismo** para otimizar operações aritméticas. 
+5. O processador deve implementar **paralelismo** para otimizar operações aritméticas.
 
-## Objetivos e Requisitos do Problema
-
-Descrever de forma clara e objetiva:
-- O objetivo principal do projeto.
-- Quais problemas ele visa resolver.
 - Quais os requisitos funcionais e não funcionais.
 - Restrições ou limitações do projeto.
 
