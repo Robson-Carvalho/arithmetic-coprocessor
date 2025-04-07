@@ -68,7 +68,7 @@ Em termos de desempenho, a unidade de controle é o "cérebro" do sistema, sendo
 As instruções desenvolvidas para o coprocessador seguem um padrão uniforme para todos os tipos de operações realizadas, sejam elas de transferência de dados ou operações aritméticas. Essa decisão de projeto foi tomada com o objetivo de simplificar a complexidade associada à implementação das instruções, assegurando que a etapa de decodificação fosse generalizada e simplificada.
 As instruções possuem um tamanho fixo de 8 bits e a estrutura das instruções é organizada da seguinte forma:
 
-![Formato da instrução](https://br.pinterest.com/pin/725924033725138267)
+![Formato da instrução](images/Diagrama de blocos (14).jpg)
 Os campos da instruçã são definidos por:
 | Atributo | Descrição |
 |----------|-----------|
