@@ -164,6 +164,23 @@ Essa decisão de projeto foi adotada com o intuito de evitar o trânsito desnece
 
 ### Banco de Registradores
 
+O banco de registradores é uma subdivisão essencial em qualquer co-processador, funcionando como uma área de armazenamento temporário para os dados manipulados durante a execução das instruções. No sistema desenvolvido, essa estrutura foi projetada com o objetivo de garantir agilidade no acesso às informações, reduzindo o tempo necessário para buscar dados diretamente na memória principal.
+
+#### Diagrama Funcional
+
+---
+![Diagrama Banco de Registradores](images/BancoDeReg.png)
+---
+
+#### Tipos de Registradores
+
+| Tipo                         | Função                                                                 |
+|------------------------------|------------------------------------------------------------------------|
+| **Registradores de Dados**   | Armazenam matrizes e operandos utilizados nas operações. Ligados à ULA e à memória. |
+| **Registradores de Controle**| Guardam os campos extraídos das instruções, definindo o fluxo de execução.        |
+
+A separação entre registradores de dados e de controle torna o sistema mais modular, facilitando o entendimento do fluxo de informações dentro do co-processador e otimizando sua implementação. Além disso, esse modelo contribui para a escalabilidade do projeto, permitindo futuras expansões ou adaptações com maior facilidade.
+
 ## Módulo de memória
 
 ### Leitura e escrita dos dados a partir da memória
