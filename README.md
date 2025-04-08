@@ -9,7 +9,7 @@
   - [Icarus Verilog](#icarus-verilog)
 - [Desenvolvimento e Descrição em Alto Nível](#desenvolvimento-e-descrição-em-alto-nível)
   - [Unidade de Controle](#unidade-de-controle)
-  - [ULA (Unidade Lógica e Aritmética)](#ula-unidade-lógica-e-aritmética)
+  - [ULA (Unidade Lógica e Aritmética)](#unidade-lógica-aritmética)
 - [Testes, Simulações, Resultados e Discussões](#testes-simulações-resultados-e-discussões)
 
 ---
@@ -198,7 +198,7 @@ A separação entre registradores de dados e de controle torna o sistema mais mo
 
 ### Sincronização
 
-## 🧮 ULA (Unidade Lógica-Aritmética)
+## 🧮 Unidade Lógica-Aritmética
 
 ### 💡 O que é uma ULA?
 
@@ -258,7 +258,31 @@ Simulação via Icarus Verilog, inicialmente, todos os módulos foram testados d
 
 ## 🧷 Testes Individuais por Operação
 
-Cada operação foi testada com diferentes matrizes de entrada, garantindo cobertura para:
+Cada operação foi testada com diferentes matrizes de entrada, garantindo cobertura para matrizes de ordem 2x2 até 5x5.
+
+<div align="center" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;">
+
+  <div style="flex: 1 1 45%; text-align: center;">
+    <img src="./images/tests/1.png" width="100%" alt="Teste 1"/>
+    <p><em>🔍 Simulação - Teste de matrizes 2x2</em></p>
+  </div>
+
+  <div style="flex: 1 1 45%; text-align: center;">
+    <img src="./images/tests/2.png" width="100%" alt="Teste 2"/>
+    <p><em>⚙️ Simulação - Teste de matrizes 3x3</em></p>
+  </div>
+
+  <div style="flex: 1 1 45%; text-align: center;">
+    <img src="./images/tests/3.png" width="100%" alt="Teste 3"/>
+    <p><em>📈 Simulação - Teste de matrizes 4x4</em></p>
+  </div>
+
+  <div style="flex: 1 1 45%; text-align: center;">
+    <img src="./images/tests/4.png" width="100%" alt="Teste 4"/>
+    <p><em>📉 Simulação - Teste de matrizes x5</em></p>
+  </div>
+
+</div>
 
 ## 📈 Análise dos Resultados
 
@@ -276,13 +300,11 @@ Os testes revelaram que:
 
 Durante a síntese no Quartus Prime II, foram observadas as seguintes métricas relevantes:
 
-<div align="center">
-  <br/>
-
-  <img  src="" width="50%" alt="Imagem dos recursos utilizados"/>
-
-  <br/>
-  <br/>
+<div align="center" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;">
+  <div style="flex: 1 1 45%; text-align: center;">
+    <img  src="" width="50%" alt="Imagem dos recursos utilizados"/>
+    <p><em>🔍 Recursos utilizados no Quartus Prime II</em></p>
+  </div>
 </div>
 
 - Baixo consumo de **DSP Blocks**, uma vez que foi visado o baixo uso do recurso, por ser escasso, assim deixar para utilização de outros componentes de controle e etc.
