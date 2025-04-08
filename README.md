@@ -46,17 +46,58 @@ O coprocessador foi planejado com foco em **desempenho**, utilizando **paralelis
 
 ### 🔧 Quartus Prime
 
-Explicar como o Quartus Prime foi utilizado no desenvolvimento, como a criação do projeto, síntese, análise de tempo e gravação na FPGA.
+- Síntese e Compilação:
+
+O Quartus Prime é utilizado para compilar o projeto em Verilog, convertendo a descrição HDL em uma implementação física adequada para a FPGA. Durante esse processo, o compilador realiza a síntese lógica, o mapeamento e o ajuste de layout (place and route), otimizando as rotas lógicas e a alocação dos recursos internos da FPGA, conforme as recomendações descritas no User Guide: Compiler.
+
+- Análise de Timing:
+
+Emprega-se o TimeQuest Timing Analyzer para validar as restrições temporais, como os tempos de setup e hold, além de identificar os caminhos críticos no design. Essa análise é essencial para garantir que o projeto opere de forma estável em frequência alvo, conforme metodologias detalhadas na documentação oficial.
+
+- Gravação na FPGA:
+
+A programação da FPGA é realizada via Programmer, utilizando o cabo USB-Blaster. Esse procedimento suporta a gravação de múltiplos arquivos .sof, permitindo a configuração e reconfiguração do hardware conforme especificado nos guias técnicos da Intel.
+
+- Design Constraints:
+
+São definidas as restrições de pinos e de clock por meio do Pin Planner e das ferramentas de timing. Essas constraints garantem que as conexões físicas e os requisitos temporais sejam atendidos, alinhando-se às práticas recomendadas no User Guide da ferramenta.  
+
+- Referência oficial: 
+[**Quartus Prime Guide**](https://www.intel.com/content/www/us/en/support/programmable/support-resources/design-software/user-guides.html)
 
 ### 💻 FPGA DE1-SoC
 
-Descrever as características da placa utilizada, como número de portas, switches, LEDs, e como ela foi utilizada no projeto.
+- Especificações Técnicas:
+
+A placa DE1-SoC, baseada no FPGA Cyclone V SoC (modelo 5CSEMA5F31C6N), conta com aproximadamente 85K elementos lógicos (LEs), 4.450 Kbits de memória embarcada e 6 blocos DSP de 18x18 bits. Essas características permitem a implementação de designs complexos e o processamento paralelo de dados.
+
+
+-   Periféricos Utilizados:
+    
+    -   Switches e LEDs: 
+        Utilizados para depuração e controle manual, permitindo, por exemplo, a seleção e visualização de operações matriciais.
+        
+    -   Acesso à Chip Memory:
+        O design utiliza diretamente a memória embarcada na FPGA para armazenamento temporário de dados e matrizes, eliminando a necessidade de interfaces externas para memória DDR3.
+        
+    -   Compatibilidade:  
+        O projeto foi compilado com Quartus Prime 20.1.1 e testado com a versão 6.0.0 do CD-ROM da DE1-SoC (rev.H), conforme as especificações técnicas fornecidas pela Terasic.
+
+- Referência oficial:
+[**Manual da Placa**](https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&No=836&PartNo=4)
 
 ### ⚡ Icarus Verilog
 
-Comentar sobre o uso das ferramenta para simulação:
+- Simulação RTL:
 
-- Escrita e testes dos módulos em Verilog.
+O Icarus Verilog é utilizado para simular a funcionalidade dos módulos de nível RTL, como a ULA (Unidade Lógica e Aritmética) e a Unidade de Controle. As simulações geram waveforms que podem ser visualizadas com o GTKWave, permitindo a análise detalhada do comportamento do design.  
+
+- Validação de Casos de Borda:
+
+Foram realizados testes exaustivos para validar situações extremas, como o overflow em operações de multiplicação de 8 bits, assegurando que o design opere corretamente sob todas as condições previstas.
+
+- Referência oficial: 
+ [**Icarus Verilog Compiler**](https://steveicarus.github.io/iverilog/)
 
 ## 🚀 Desenvolvimento e Descrição em Alto Nível
 
