@@ -26,17 +26,17 @@ O coprocessador foi planejado com foco em **desempenho**, utilizando **paralelis
 
 ### Requisitos do Projeto
 
-1. Descrição completa do hardware utilizando a linguagem **Verilog**.  
-2. O sistema deve ser compatível e utilizar os componentes disponíveis na **FPGA DE1-SoC**.  
+1. Descrição completa do hardware utilizando a linguagem **Verilog**.
+2. O sistema deve ser compatível e utilizar os componentes disponíveis na **FPGA DE1-SoC**.
 3. Capacidade de realizar as seguintes operações matriciais:
-   - Soma  
-   - Subtração  
-   - Multiplicação de matrizes  
-   - Multiplicação por número inteiro  
-   - Cálculo do determinante  
-   - Transposição  
-   - Geração da matriz oposta  
-4. Cada elemento da matriz é representado por um número de **8 bits (1 byte)**.  
+   - Soma
+   - Subtração
+   - Multiplicação de matrizes
+   - Multiplicação por número inteiro
+   - Cálculo do determinante
+   - Transposição
+   - Geração da matriz oposta
+4. Cada elemento da matriz é representado por um número de **8 bits (1 byte)**.
 5. O processador deve implementar **paralelismo** para otimizar operações aritméticas.
 
 - Quais os requisitos funcionais e não funcionais.
@@ -45,18 +45,22 @@ O coprocessador foi planejado com foco em **desempenho**, utilizando **paralelis
 ## Recursos Utilizados
 
 ### Quartus Prime
+
 Explicar como o Quartus Prime foi utilizado no desenvolvimento, como a criação do projeto, síntese, análise de tempo e gravação na FPGA.
 
 ### FPGA DE1-SoC
+
 Descrever as características da placa utilizada, como número de portas, switches, LEDs, e como ela foi utilizada no projeto.
 
 ### Icarus Verilog
+
 Comentar sobre o uso das ferramenta para simulação:
+
 - Escrita e testes dos módulos em Verilog.
 
 ## Desenvolvimento e Descrição em Alto Nível
 
-### Unidade de Controle
+## Unidade de Controle
 
 A **unidade de controle** é o componente responsável por processar as instruções, gerenciar o fluxo de dados e coordenar os outros componentes internos, funcionando como um organizador geral do sistema. Sua função é crucial para garantir a execução eficiente das operações, especialmente no contexto de processamentos matriciais.
 
@@ -65,38 +69,40 @@ A unidade de controle gerencia a comunicação entre a **memória RAM**, que arm
 Em termos de desempenho, a unidade de controle é o "cérebro" do sistema, sendo responsável por organizar e orquestrar as etapas de cada operação matricial. Ela garante que os dados sejam lidos da memória na ordem correta, que as operações sejam executadas corretamente pela ULA e que o fluxo de controle seja mantido sem erros durante o processamento das matrizes.
 
 ### Instruction Set Architecture
+
 As instruções desenvolvidas para o coprocessador seguem um padrão uniforme para todos os tipos de operações realizadas, sejam elas de transferência de dados ou operações aritméticas. Essa decisão de projeto foi tomada com o objetivo de simplificar a complexidade associada à implementação das instruções, assegurando que a etapa de decodificação fosse generalizada e simplificada.
 As instruções possuem um tamanho fixo de 8 bits e a estrutura das instruções é organizada da seguinte forma:
 
-![Formato da instrução](images/Diagrama%20de%20blocos%20(14).jpg)
+![Formato da instrução](<images/Diagrama%20de%20blocos%20(14).jpg>)
 
 Os campos da instrução são definidos por:
 | Atributo | Descrição |
 |----------|-----------|
-| **MT**   | Matriz alvo do carregamento (A ou B) |
+| **MT** | Matriz alvo do carregamento (A ou B) |
 | **M_Size** | Tamanho da matriz utilizado por operações de movimentação de dados e aritméticas |
 | **OPCODE** | Código de operação |
 
 Conjunto de instruções do coprocessador:
+
 ### Instruções aritméticas e seus Códigos Hexadecimais
 
-| Instrução       | Código Hexadecimal |
-|-----------------|--------------------|
-| **Soma**        | `0x01`             |
-| **Subtração**   | `0x02`             |
-| **Multiplicação**| `0x03`            |
-| **Multiplicação por número inteiro** | `0x04` |
-| **Transposição** | `0x05`             |
-| **Matriz Oposta**| `0x06`            |
-| **Determinante 2x2** | `0x17`             |
-| **Determinante 3x3** | `0x1F`             |
-| **Determinante 4x4** | `0x27`             |
-| **Determinante 5x5** | `0x2F`             |
+| Instrução                            | Código Hexadecimal |
+| ------------------------------------ | ------------------ |
+| **Soma**                             | `0x01`             |
+| **Subtração**                        | `0x02`             |
+| **Multiplicação**                    | `0x03`             |
+| **Multiplicação por número inteiro** | `0x04`             |
+| **Transposição**                     | `0x05`             |
+| **Matriz Oposta**                    | `0x06`             |
+| **Determinante 2x2**                 | `0x17`             |
+| **Determinante 3x3**                 | `0x1F`             |
+| **Determinante 4x4**                 | `0x27`             |
+| **Determinante 5x5**                 | `0x2F`             |
 
 ### Instruções de movimentação de dados e seus Códigos Hexadecimais
 
-| Instrução       | Código Hexadecimal |
-|-----------------|--------------------|
+| Instrução                 | Código Hexadecimal |
+| ------------------------- | ------------------ |
 | **Carregar matriz A 2x2** | `0x10`             |
 | **Carregar matriz A 3x3** | `0x18`             |
 | **Carregar matriz A 4x4** | `0x20`             |
@@ -112,30 +118,34 @@ As etapas de processamento do sistema são definidas por meio de uma máquina de
 
 ---
 
-#### - Fetch  
+#### - Fetch
+
 O estado Fetch representa a etapa inicial do fluxo de processamento. Sua principal função é realizar a busca da instrução na memória. No sistema implementado, essa busca ocorre no endereço 0x0, reservado exclusivamente para o armazenamento da instrução atual.  
 A FSM aguarda um sinal de controle denominado "start process”, que indica a alocação de uma nova instrução no endereço especificado. Ao receber esse sinal, a FSM extrai os dados da posição de memória e os transfere para um registrador interno, o qual será utilizado na etapa seguinte do processamento.
 
 ---
 
-#### - Decode  
+#### - Decode
+
 O estado Decode tem como função interpretar a instrução capturada durante a etapa de Fetch. Nessa fase, o sistema realiza a separação dos campos presentes na instrução e os aloca em registradores de controle apropriados. Esses registradores são essenciais para orientar o fluxo de dados e definir o comportamento da máquina nas etapas subsequentes do processamento.
 
 ---
 
-#### - Execute  
+#### - Execute
+
 O estado Execute é responsável por processar as informações contidas na instrução decodificada. Nessa etapa, o coprocessador realiza operações de leitura na memória ou delega à ULA (Unidade Lógica e Aritmética) a execução das operações aritméticas sobre as matrizes. Trata-se da fase central de todo o sistema, onde as instruções são efetivamente aplicadas, garantindo que os cálculos e movimentações de dados ocorram de forma correta e consistente.
 
 ---
 
-#### - WriteBack  
+#### - WriteBack
+
 O estado de writeback é responsável por escrever na memória a matriz resultante do processamento aritmético. Essa etapa assegura que os dados processados pela ULA estejam disponíveis para o processador no endereço de memória adequado.
 
 ---
 
-#### - CleanUP  
-O estado CleanUP é responsável por reiniciar todos os registradores de controle da FSM, assegurando que o processamento não seja comprometido por resíduos de dados anteriores. A inclusão deste estágio mostrou-se vantajosa para evitar possíveis erros de metaestabilidade e garantir um ambiente limpo para a próxima operação. Após a conclusão desta etapa, o sistema retorna ao estado Fetch, aguardando uma nova sinalização de início de processamento.
+#### - CleanUP
 
+O estado CleanUP é responsável por reiniciar todos os registradores de controle da FSM, assegurando que o processamento não seja comprometido por resíduos de dados anteriores. A inclusão deste estágio mostrou-se vantajosa para evitar possíveis erros de metaestabilidade e garantir um ambiente limpo para a próxima operação. Após a conclusão desta etapa, o sistema retorna ao estado Fetch, aguardando uma nova sinalização de início de processamento.
 
 ### Fluxos de Execução da FSM
 
@@ -161,7 +171,6 @@ O segundo fluxo está relacionado ao processamento aritmético das matrizes. Ap�
 
 Essa decisão de projeto foi adotada com o intuito de evitar o trânsito desnecessário dos dados por estágios irrelevantes ao seu tipo de operação, otimizando o tempo de execução e assegurando maior eficiência no processamento.
 
-
 ### Banco de Registradores
 
 O banco de registradores é uma subdivisão essencial em qualquer co-processador, funcionando como uma área de armazenamento temporário para os dados manipulados durante a execução das instruções. No sistema desenvolvido, essa estrutura foi projetada com o objetivo de garantir agilidade no acesso às informações, reduzindo o tempo necessário para buscar dados diretamente na memória principal.
@@ -169,16 +178,17 @@ O banco de registradores é uma subdivisão essencial em qualquer co-processador
 #### Diagrama Funcional
 
 ---
+
 <img src="images/BancoDeReg.png" width="200"/>
 
 ---
 
 #### Tipos de Registradores
 
-| Tipo                         | Função                                                                 |
-|------------------------------|------------------------------------------------------------------------|
-| **Registradores de Dados**   | Armazenam matrizes e operandos utilizados nas operações. Ligados à ULA e à memória. |
-| **Registradores de Controle**| Guardam os campos extraídos das instruções, definindo o fluxo de execução.        |
+| Tipo                          | Função                                                                              |
+| ----------------------------- | ----------------------------------------------------------------------------------- |
+| **Registradores de Dados**    | Armazenam matrizes e operandos utilizados nas operações. Ligados à ULA e à memória. |
+| **Registradores de Controle** | Guardam os campos extraídos das instruções, definindo o fluxo de execução.          |
 
 A separação entre registradores de dados e de controle torna o sistema mais modular, facilitando o entendimento do fluxo de informações dentro do co-processador e otimizando sua implementação. Além disso, esse modelo contribui para a escalabilidade do projeto, permitindo futuras expansões ou adaptações com maior facilidade.
 
@@ -188,10 +198,57 @@ A separação entre registradores de dados e de controle torna o sistema mais mo
 
 ### Sincronização
 
-### ULA (Unidade Lógica e Aritmética)
-- Operações suportadas.
-- Como a ULA recebe os sinais de controle.
-- Como os resultados são manipulados e enviados.
+## 🧮 ULA (Unidade Lógica-Aritmética)
+
+### 💡 O que é uma ULA?
+
+A Unidade Lógica-Aritmética (ULA) é o componente responsável por realizar operações matemáticas em processadores ou co-processadores especializados em cálculos específicos.
+
+No contexto deste projeto, a ULA foi desenvolvida como parte da primeira avaliação da disciplina MI - Sistemas Digitais, sendo integrada a um co-processador especializado em operações matriciais.
+
+Uma Unidade Lógica-Aritmética se trata do componente responsável por realziar as operações nos processadores ou co-processadores especialziados em cálculos específicos. No contexto do problema, a ULA desenvolvida para o co-processador, requisitado como primeira avaliação da disciplina MI - Sistemas Digitais, é especializado em operações matriciais.
+
+### ⚒️ Operações suportadas.
+
+Atualmente, a ULA implementa as seguintes operações matriciais:
+
+- Soma
+- Subtração
+- Multiplicação
+- Transposição
+- Matriz Oposta
+- Produto por Escalar
+- Cálculo de Determinante
+
+### 🔁 Operações com Lógica Combinacional
+
+As operações de soma, subtração, transposição, matriz oposta e produto por escalar são realizadas em apenas um ciclo de clock, utilizando lógica combinacional.
+
+### ⚙️ Multiplicação com Shift and Add
+
+Para a operação de multiplicação, a técnica Shift and Add foi adotada com o objetivo de reduzir o consumo de DSP Blocks — blocos especializados em multiplicação que são recursos escassos na FPGA [DE1-SoC](https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&No=836). Essa técnica consiste em realizar deslocamentos de bits seguidos de somas, ao invés da multiplicação convencional.
+
+### 📐 Determinante com Cálculo Sequencial
+
+O cálculo de determinantes para matrizes quadradas de ordem N ≥ 3 é uma operação computacionalmente complexa. Portanto, foi implementado de forma sequencial, tornando o processo mais viável em termos de desempenho e uso de recursos.
+
+### 📥 Como a ULA recebe os dados e sinais de controle
+
+Após a UC [(Unidade de Controle)](#unidade-de-controle) obter as matrizes e o opcode da operação, ela realiza a tratativa e o empacotamento dos dados. Em seguida, envia para a ULA 25 bytes, cada um representando um elemento da matriz máxima suportada: uma matriz quadrada 5x5.
+
+Essa padronização permite que a ULA opere diretamente sobre o conjunto de dados sem a necessidade de redefinir estruturas internas para diferentes dimensões de matriz.
+
+### 📤 Como os resultados são manipulados e retornados
+
+A ULA opera sempre com matrizes de ordem 5x5, mesmo quando a matriz de entrada possui uma ordem inferior (como 2x2 ou 4x4). Para operações como soma, subtração, transposição, matriz oposta, produto por escalar e multiplicação de matrizes, o tamanho real da matriz não influencia no resultado, pois os elementos fora da região válida são preenchidos com zero.
+
+Essa estratégia permite que todas as operações sejam realizadas por um único módulo, otimizando a lógica e facilitando o suporte a diferentes dimensões de matrizes de forma unificada.
+
+Os valores são preenchidos corretamente nos espaços correspondentes da "fita de bytes", que posteriormente é retornada à UC (Unidade de Controle) para processamento ou exibição.
+
+### ⚠️ Atenção ao cálculo do determinante:
+
+Para a operação de determinante, o tamanho da matriz impacta diretamente o resultado. Por isso, é utilizado o [Teorema de Laplace](https://pt.wikipedia.org/wiki/Teorema_de_Laplace), e há um módulo dedicado para cada tamanho de matriz, garantindo precisão no cálculo para matrizes de diferentes ordens.
 
 ## Testes, Simulações, Resultados e Discussões
 
@@ -201,16 +258,24 @@ A separação entre registradores de dados e de controle torna o sistema mais mo
 - Analisar o desempenho do sistema e a correção das funcionalidades.
 - Como lidar com limitações ou melhorias futuras, comente aqui também.
 
+## 💭 Discussões e Melhorias Futuras
+
+Embora a ULA tenha se comportado conforme o esperado, algumas melhorias podem ser consideradas:
+
+- 📦 Compactação de dados de entrada: reduzir a largura de barramento para otimizar a comunicação com a UC.
+
+- 🧮 Cálculo otimizado de determinante: explorar técnicas como eliminação de Gauss para reduzir a complexidade sequencial.
+
+- 🧩 Suporte a matrizes não quadradas: possibilidade futura de expansão do módulo para aceitar operações com matrizes de diferentes dimensões.
+
 ## Colaboradores
 
 Este projeto foi desenvolvido por:
 
-- [**Guilherme Fernandes Sardinha**](https://github.com/DrizinCoder) – desenvolvimento da Unidade de controle, simulações/testes e escrita do relatório  
+- [**Guilherme Fernandes Sardinha**](https://github.com/DrizinCoder) – desenvolvimento da Unidade de controle, simulações/testes e escrita do relatório
 - [**Robson Carvalho de Souza**](https://github.com/Robson-Carvalho) – lógica da ULA, simulações/testes e escrita do relatório
-- [**Lucas Damasceno da Conceição**] – suporte na ULA e escrita do relatório  
+- [**Lucas Damasceno da Conceição**](https://github.com/Lucas-Damasceno-dev/calculoDeterminante/blob/main/determinant5x5_expansion.v) – suporte na ULA e escrita do relatório
 
 Agradecimentos ao(a) professor(a) [**Wild Freitas da Silva Santos**] pela orientação.
 
-
 ---
-
