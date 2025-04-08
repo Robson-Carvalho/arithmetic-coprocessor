@@ -220,25 +220,25 @@ Atualmente, a ULA implementa as seguintes operações matriciais:
 - Produto por Escalar
 - Cálculo de Determinante
 
-### 🔁 Operações com Lógica Combinacional
+#### 🔁 Operações com Lógica Combinacional
 
 As operações de soma, subtração, transposição, matriz oposta e produto por escalar são realizadas em apenas um ciclo de clock, utilizando lógica combinacional.
 
-### ⚙️ Multiplicação com Shift and Add
+#### ⚙️ Multiplicação com Shift and Add
 
 Para a operação de multiplicação, a técnica Shift and Add foi adotada com o objetivo de reduzir o consumo de DSP Blocks — blocos especializados em multiplicação que são recursos escassos na FPGA [DE1-SoC](https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&No=836). Essa técnica consiste em realizar deslocamentos de bits seguidos de somas, ao invés da multiplicação convencional.
 
-### 📐 Determinante com Cálculo Sequencial
+#### 📐 Determinante com Cálculo Sequencial
 
 O cálculo de determinantes para matrizes quadradas de ordem N ≥ 3 é uma operação computacionalmente complexa. Portanto, foi implementado de forma sequencial, tornando o processo mais viável em termos de desempenho e uso de recursos.
 
-### 📥 Como a ULA recebe os dados e sinais de controle
+#### 📥 Como a ULA recebe os dados e sinais de controle
 
 Após a UC [(Unidade de Controle)](#unidade-de-controle) obter as matrizes e o opcode da operação, ela realiza a tratativa e o empacotamento dos dados. Em seguida, envia para a ULA 25 bytes, cada um representando um elemento da matriz máxima suportada: uma matriz quadrada 5x5.
 
 Essa padronização permite que a ULA opere diretamente sobre o conjunto de dados sem a necessidade de redefinir estruturas internas para diferentes dimensões de matriz.
 
-### 📤 Como os resultados são manipulados e retornados
+#### 📤 Como os resultados são manipulados e retornados
 
 A ULA opera sempre com matrizes de ordem 5x5, mesmo quando a matriz de entrada possui uma ordem inferior (como 2x2 ou 4x4). Para operações como soma, subtração, transposição, matriz oposta, produto por escalar e multiplicação de matrizes, o tamanho real da matriz não influencia no resultado, pois os elementos fora da região válida são preenchidos com zero.
 
@@ -246,17 +246,48 @@ Essa estratégia permite que todas as operações sejam realizadas por um único
 
 Os valores são preenchidos corretamente nos espaços correspondentes da "fita de bytes", que posteriormente é retornada à UC (Unidade de Controle) para processamento ou exibição.
 
-### ⚠️ Atenção ao cálculo do determinante:
+#### ⚠️ Atenção ao cálculo do determinante:
 
 Para a operação de determinante, o tamanho da matriz impacta diretamente o resultado. Por isso, é utilizado o [Teorema de Laplace](https://pt.wikipedia.org/wiki/Teorema_de_Laplace), e há um módulo dedicado para cada tamanho de matriz, garantindo precisão no cálculo para matrizes de diferentes ordens.
 
-## Testes, Simulações, Resultados e Discussões
+## 🧪 Testes e Simulações
 
-- Descrever os testes realizados em cada módulo individualmente.
-- Apresentar imagens ou tabelas com os resultados das simulações (como capturas do GTKWave, se for o caso).
-- Discutir o que foi observado nos testes.
-- Analisar o desempenho do sistema e a correção das funcionalidades.
-- Como lidar com limitações ou melhorias futuras, comente aqui também.
+A metodologia de Testes usada para garantir o correto funcionamento da ULA foram conduzidos em duas etapas:
+
+Simulação via Icarus Verilog, inicialmente, todos os módulos foram testados de forma isolada utilizando o simulador Icarus Verilog. Após a validação por simulação, o projeto foi sintetizado no ambiente Quartus Prime II e implementado na placa DE1-SoC, replicando o ambiente final de operação do co-processador.
+
+## 🧷 Testes Individuais por Operação
+
+Cada operação foi testada com diferentes matrizes de entrada, garantindo cobertura para:
+
+## 📈 Análise dos Resultados
+
+Os testes revelaram que:
+
+- ✅ As operações de lógica combinacional foram executadas corretamente em um único ciclo de clock, apresentando excelente desempenho.
+
+- ✅ A operação de multiplicação por Shift and Add mostrou-se eficiente no uso de recursos, consumindo significativamente menos DSPs que a multiplicação direta.
+
+- ⚠️ O cálculo do determinante, por ser realizado de forma sequencial, demandou mais ciclos de clock. No entanto, a divisão por módulos específicos para cada ordem de matriz tornou o tempo aceitável para o contexto do projeto.
+
+- ✅ O preenchimento das regiões inválidas da matriz com zero funcionou corretamente, mantendo a integridade dos dados para ordens menores.
+
+## 📉 Desempenho e Uso de Recursos
+
+Durante a síntese no Quartus Prime II, foram observadas as seguintes métricas relevantes:
+
+<div align="center">
+  <br/>
+
+  <img  src="" width="50%" alt="Imagem dos recursos utilizados"/>
+
+  <br/>
+  <br/>
+</div>
+
+- Baixo consumo de **DSP Blocks**, uma vez que foi visado o baixo uso do recurso, por ser escasso, assim deixar para utilização de outros componentes de controle e etc.
+
+- Utilização moderada de **ALMs**, uma vez que é um recurso abundante. Dessa forma, optamos por utiliza-lô de maneira modearada.
 
 ## 💭 Discussões e Melhorias Futuras
 
@@ -266,13 +297,13 @@ Embora a ULA tenha se comportado conforme o esperado, algumas melhorias podem se
 
 - 🧩 Suporte a matrizes não quadradas: possibilidade futura de expansão do módulo para aceitar operações com matrizes de diferentes dimensões.
 
-## Colaboradores
+## ✍️ Colaboradores
 
 Este projeto foi desenvolvido por:
 
-- [**Guilherme Fernandes Sardinha**](https://github.com/DrizinCoder) – desenvolvimento da Unidade de controle, simulações/testes e escrita do relatório
-- [**Robson Carvalho de Souza**](https://github.com/Robson-Carvalho) – lógica da ULA, simulações/testes e escrita do relatório
-- [**Lucas Damasceno da Conceição**](https://github.com/Lucas-Damasceno-dev/calculoDeterminante/blob/main/determinant5x5_expansion.v) – suporte na ULA e escrita do relatório
+- [**Guilherme Fernandes Sardinha**](https://github.com/DrizinCoder) – Desenvolvimento da Unidade de controle, simulações, testes e escrita do relatório.
+- [**Robson Carvalho de Souza**](https://github.com/Robson-Carvalho) – Desenvolvimento da ULA (Unidade Lógica-Aritmética), simulações, testes e escrita do relatório.
+- [**Lucas Damasceno da Conceição**](https://github.com/Lucas-Damasceno-dev/calculoDeterminante/blob/main/determinant5x5_expansion.v) – Suporte na ULA e escrita do relatório.
 
 Agradecimentos ao(a) professor(a) [**Wild Freitas da Silva Santos**] pela orientação.
 
