@@ -262,8 +262,6 @@ Para a operação de determinante, o tamanho da matriz impacta diretamente o res
 
 Embora a ULA tenha se comportado conforme o esperado, algumas melhorias podem ser consideradas:
 
-- 📦 Compactação de dados de entrada: reduzir a largura de barramento para otimizar a comunicação com a UC.
-
 - 🧮 Cálculo otimizado de determinante: explorar técnicas como eliminação de Gauss para reduzir a complexidade sequencial.
 
 - 🧩 Suporte a matrizes não quadradas: possibilidade futura de expansão do módulo para aceitar operações com matrizes de diferentes dimensões.
