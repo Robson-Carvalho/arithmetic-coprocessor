@@ -208,17 +208,80 @@ No contexto deste projeto, a ULA foi desenvolvida como parte da primeira avalia�
 
 Uma Unidade Lógica-Aritmética se trata do componente responsável por realziar as operações nos processadores ou co-processadores especialziados em cálculos específicos. No contexto do problema, a ULA desenvolvida para o co-processador, requisitado como primeira avaliação da disciplina MI - Sistemas Digitais, é especializado em operações matriciais.
 
-### ⚒️ Operações suportadas.
+### 🏗️ Arquitetura
 
-Atualmente, a ULA implementa as seguintes operações matriciais:
+#### Módulo Principal (`alu.v`)
 
-- Soma
-- Subtração
-- Multiplicação
-- Transposição
-- Matriz Oposta
-- Produto por Escalar
-- Cálculo de Determinante
+- Controla todas as operações
+- Seleciona sub-módulos baseado no opcode
+- Gerencia sinais de clock, done e overflow
+
+#### Sub-módulos Especializados
+
+| Módulo                      | Operação | Descrição                     |
+| --------------------------- | -------- | ----------------------------- |
+| `alu_sum_module`            | A + B    | Soma elemento a elemento      |
+| `alu_subtraction_module`    | A - B    | Subtração elemento a elemento |
+| `alu_multiplication_module` | A × B    | Multiplicação matricial       |
+| `alu_opposite_module`       | -A       | Matriz oposta                 |
+| `alu_transpose_module`      | Aᵀ       | Matriz transposta             |
+| `alu_scalar_module`         | k·A      | Multiplicação por escalar     |
+| `alu_determinant_module`    | det(A)   | Cálculo de determinante       |
+
+### 📊 Operações Suportadas
+
+```verilog
+case (opcode)
+  3'b001: begin  // Soma
+      C_flat = sum_C;
+      overflow_flag = sum_ovf;
+  end
+  3'b010: begin  // Subtração
+      C_flat = sub_C;
+      overflow_flag = sub_ovf;
+  end
+  3'b011: begin  // Multiplicação
+      C_flat <= mul_C;
+      overflow_flag <= mul_ovf;
+  end
+  3'b100: begin  // Matriz oposta
+      C_flat = opposite_C;
+  end
+  3'b101: begin  // Transposta
+      C_flat = transpose_C;
+  end
+  3'b110: begin  // Produto por escalar
+      C_flat = scalar_C;
+      overflow_flag = scalar_ovf;
+  end
+  3'b111: begin  // Determinante
+      number = determinant_number;
+      overflow_flag = determinant_ovf;
+      done = determinant_done;
+  end
+  default: begin // Caso inválido
+      C_flat = 200'b0;
+      overflow_flag = 1'b0;
+      done = 1'b1;
+  end
+endcase
+```
+
+## 🔍 Detecção de Overflow
+
+- Soma/Subtração: Verifica mudança inesperada no bit de sinal
+
+- Multiplicação: Checa se bits superiores diferem do bit de sinal
+
+- Determinante: Verifica se resultado excede 8 bits
+
+## ⚙️ Como Executar
+
+1. Executar makefile:
+
+```bash
+make run
+```
 
 #### 🔁 Operações com Lógica Combinacional
 
