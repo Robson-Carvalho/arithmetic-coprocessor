@@ -219,9 +219,9 @@ O banco de registradores é uma subdivisão essencial em qualquer co-processador
 #### 🖼️ Diagrama Funcional
 
 ---
-
-<img src="images/BancoDeReg.png" width="200"/>
-
+<p align="center">
+<img src="images/BancoDeReg.png" width="350"/>
+</p>
 ---
 
 #### 📌 Tipos de Registradores
@@ -249,7 +249,9 @@ Neste projeto, a memória foi projetada de forma enxuta, com o único objetivo d
 
 #### Diagrama da memória
 ---
-
+<p align="center">
+<img src="images/RamMem.png" width="350"/>
+</p>
 ---
 
 ## Leitura de Dados da Memória
