@@ -233,11 +233,143 @@ O banco de registradores é uma subdivisão essencial em qualquer co-processador
 
 A separação entre registradores de dados e de controle torna o sistema mais modular, facilitando o entendimento do fluxo de informações dentro do co-processador e otimizando sua implementação. Além disso, esse modelo contribui para a escalabilidade do projeto, permitindo futuras expansões ou adaptações com maior facilidade.
 
-## Módulo de memória
+## Memória
 
-### Leitura e escrita dos dados a partir da memória
+A memória desempenha um papel crucial em co-processadores, pois é nela que as instruções e dados necessários para o processamento são acessados. No projeto desenvolvido, utilizamos a **OnChip Memory** da FPGA DE1-SoC. Essa memória funciona como uma memória RAM simples e possui parâmetros configuráveis, permitindo um controle mais eficiente durante o processamento.
 
-### Sincronização
+Neste projeto, a memória foi projetada de forma enxuta, com o único objetivo de permitir o armazenamento e recebimento de instruções e os resultados após a finalização dos processos aritméticos.
+
+#### Parâmetros de entrada e saída da memória:
+
+- **clk**: Sinal de clock utilizado para sincronizar a memória com o restante do sistema.
+- **wren**: Sinal de controle que permite a escrita na memória.
+- **Mem_data**: Canal de 16 bits utilizado para a escrita de dados na memória (barramento de 16 bits).
+- **q**: Canal de saída de dados da memória, também com barramento de 16 bits, responsável por retornar os dados armazenados.
+- **address**: Entrada de dados que especifica o endereço de memória a ser acessado, permitindo a leitura ou escrita no local desejado.
+
+#### Diagrama da memória
+---
+
+---
+
+## Leitura de Dados da Memória
+
+A leitura dos dados da memória é realizada diretamente na unidade de controle. A lógica foi projetada para lidar com as matrizes de tamanho fixo 5x5, como mencionado anteriormente, e garantir a eficiência ao acessar os dados sequenciais da memória.
+
+#### Código de Leitura:
+
+```verilog
+// ======= LOAD MATRIZ ==========
+3'b000: begin
+    if (!loadingMatrix) begin
+        loadingMatrix <= 1;
+        load_counter <= 0;
+        read_pending <= 1;
+        if begin (Flag_A == 0) matrix1 <= 200'b0; end
+        else begin matrix2 <= 200'b0; end
+    end else if (read_pending) begin
+        read_pending <= 0; // Espera 1 ciclo para Mem_data
+    end else begin
+        if (load_counter < (matrix_size * matrix_size)) begin
+            row1 = load_counter / matrix_size;
+            col1 = load_counter % matrix_size;
+            virt_idx1 = row1 * 5 + col1;
+            if (Flag_A == 0) begin
+                matrix1[virt_idx1*8 +: 8] <= Mem_data[15:8];
+            end else begin
+                matrix2[virt_idx1*8 +: 8] <= Mem_data[15:8];
+            end
+        end
+        if ((load_counter + 1) < (matrix_size * matrix_size)) begin
+            row2 = (load_counter + 1) / matrix_size;
+            col2 = (load_counter + 1) % matrix_size;
+            virt_idx2 = row2 * 5 + col2;
+            if (Flag_A == 0) begin
+                matrix1[virt_idx2*8 +: 8] <= Mem_data[7:0];
+            end else begin
+                matrix2[virt_idx2*8 +: 8] <= Mem_data[7:0];
+            end
+        end
+        load_counter <= load_counter + 2;
+        if ((load_counter + 2) >= (matrix_size * matrix_size)) begin
+            load_done <= 1;
+        end else begin
+            address <= address + 1;
+            read_pending <= 1;
+        end
+    end
+end
+```
+
+### Processo de Leitura:
+
+1. **Início do processo de leitura:**
+   - Quando `loadingMatrix` é zero, isso significa que ainda não começamos a carregar a matriz. Portanto e o contador de carregamento (`load_counter`) é zerado.
+   - O sinal `read_pending` é ativado para aguardar a leitura dos dados.
+   - Se a matriz que estamos carregando for a matriz A (`Flag_A == 0`), o vetor `matrix1` é zerado; caso contrário, a matriz B (`matrix2`) é zerada.
+
+2. **Carregamento dos dados:**
+   - O código verifica se a matriz ainda não foi completamente carregada. Se não foi, ele usa o contador de carregamento para calcular a linha e a coluna do elemento a ser lido e mapeado na posição correta da memória.
+   - A matriz é preenchida utilizando índices virtuais, `virt_idx1` e `virt_idx2`, que são calculados com base no contador `load_counter`. Esses índices indicam a posição na matriz de 5x5. Isso é feito para armazenar e trabalhar com matrizes menores no formato 5x5 de forma correta.
+   - O código também cuida de separar os dados de 16 bits, onde 8 bits são lidos de cada vez. Se for a matriz A (`Flag_A == 0`), os dados são colocados em `matrix1`; caso contrário, em `matrix2`.
+
+3. **Controle de ciclos:**
+   - A cada ciclo, o contador de leitura (`load_counter`) é incrementado em 2, já que estamos lendo dois números (16 bits) por vez. O endereço de memória é atualizado para acessar a próxima posição, e a variável `read_pending` é ativada novamente.
+
+4. **Finalizando o carregamento:**
+   - Quando todos os dados da matriz foram lidos, o sinal `load_done` é ativado, indicando que o carregamento da matriz foi concluído.
+
+## Escrita de Dados na Memória
+
+A escrita dos dados segue uma lógica semelhante à da leitura, mas com o objetivo de gravar os resultados após o processamento das matrizes. Dessa forma, a escrita das matrizes resultantes são feitas da seguinte forma:
+
+
+### Código de Escrita:
+
+```verilog
+LED <= 1'b1;
+WB <= 1'b1;
+
+// Sempre lê do buffer 5x5 (25 elementos)
+write_data[15:8] <= result[store_counter*8 +: 8];  // Elemento atual
+write_data[7:0] <= result[(store_counter+1)*8 +: 8]; // Próximo elemento
+
+// Endereço base + offset (cada par ocupa 1 word)
+address <= 8'd14 + (store_counter >> 1);
+
+// Controle de ciclos de escrita
+if (write_counter < 3) begin
+    write_counter <= write_counter + 1;
+end else begin
+    write_counter <= 0;
+    store_counter <= store_counter + 2;
+
+    // Finaliza após escrever TODOS os 25 elementos (5x5)
+    if (store_counter >= 24) begin  // 25º elemento está no índice 24
+        WB <= 0;
+        store_counter <= 0;
+        write_done <= 1'b1;
+    end
+end
+```
+
+### Processo de Escrita:
+
+1. **Controle de Escrita:**
+   - A escrita dos dados é iniciada ao ativar o sinal de controle  `WB`.
+   - O vetor `write_data` é preenchido com os dados do resultado, onde o valor de `result` é dividido em duas partes. A primeira parte (8 bits) vai para `write_data[15:8]`, e a segunda parte vai para `write_data[7:0]`.
+
+2. **Cálculo do Endereço de Memória:**
+   - O endereço de memória é calculado com base no endereço base, somando o offset de cada par de elementos (dois elementos por palavra na memória).
+
+3. **Controle de Ciclos de Escrita:**
+   - Um contador (`write_counter`) é usado para controlar o número de ciclos de escrita. A cada ciclo, ele é incrementado até atingir o limite de 3, e então o contador é resetado.
+   - O contador `store_counter` é utilizado para indicar o elemento atual a ser armazenado.
+
+4. **Finalizando a Escrita:**
+   - Quando todos os 25 elementos da matriz 5x5 (representados por `store_counter` até o valor 24) forem gravados na memória, o sinal `WB` é desativado, indicando que a escrita foi concluída, e o sinal `write_done` é ativado, finalizando o processo.
+
+A implementação das operações de leitura e escrita foram projetadas para otimizar a interação com a memória, garantindo uma sincronização eficiente com o processo de manipulação das matrizes. As decisões de projeto adotadas, como o controle de ciclos e o uso de buffers de 5x5, permitem que os dados sejam acessados e armazenados de forma eficaz, minimizando desperdício de ciclos e garantindo a integridade dos resultados ao final do processamento.
 
 ## 🧮 Unidade Lógica-Aritmética
 
