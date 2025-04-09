@@ -132,9 +132,9 @@ Os campos da instrução são definidos por:
 | **Soma**                             | `0x01`             |
 | **Subtração**                        | `0x02`             |
 | **Multiplicação**                    | `0x03`             |
-| **Multiplicação por número inteiro** | `0x04`             |
+| **Matriz Oposta**                    | `0x04`             |
 | **Transposição**                     | `0x05`             |
-| **Matriz Oposta**                    | `0x06`             |
+| **Multiplicação por número inteiro** | `0x06`             |
 | **Determinante 2x2**                 | `0x17`             |
 | **Determinante 3x3**                 | `0x1F`             |
 | **Determinante 4x4**                 | `0x27`             |
