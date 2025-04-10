@@ -1,271 +1,312 @@
-	module coprocessador(
-    input clk, reset,
-	 input [15:0] Mem_data,
-	 input Start_process,
-	 output reg LED,
-	 output [15:0]result_wire,
-	 output [7:0]mem_address,
-	 output WB_wire,
-	 output DONE,
-	 output overflow,
-	 output [5:0] first_element
+module coprocessador(
+    input clk, reset,                // Clock e sinal de reset
+    input [15:0] Mem_data,           // Dados lidos da memória (16 bits)
+    input Start_process,             // Sinal para iniciar o processamento
+    output reg LED,                  // LED de status
+    output [15:0] result_wire,       // Resultado para escrita na memória
+    output [7:0] mem_address,        // Endereço de memória atual
+    output WB_wire,                  // Sinal de Write Back (controle memória)
+    output DONE,                     // Sinal de operação concluída
+    output overflow,                 // Flag de overflow da ULA
+    output [5:0] first_element       // Primeiro elemento da matriz (para debug)
 );
     
-     // Estados do processador
-    parameter FETCH = 3'b000;
-    parameter DECODE = 3'b001;
-    parameter EXECUTE = 3'b010;
-	parameter WRITEBACK = 3'b011;
-	parameter CLEANUP = 3'b100;
+    // Definição dos estados da máquina de estados
+    parameter FETCH = 3'b000;       // Estado de busca de instrução
+    parameter DECODE = 3'b001;      // Estado de decodificação
+    parameter EXECUTE = 3'b010;     // Estado de execução
+    parameter WRITEBACK = 3'b011;   // Estado de escrita dos resultados
+    parameter CLEANUP = 3'b100;     // Estado de limpeza/preparação
 
-    reg [2:0] state_reg, state_next;
+    // Registros para controle da máquina de estados
+    reg [2:0] state_reg, state_next;  // Estado atual e próximo estado
 
-   // =======REGISTRADORES DE CONTROLE
-    reg [2:0] opcode;
-    reg [2:0] matrix_size;
-    reg [199:0] matrix1, matrix2;
-	reg [7:0] real_number;
-	reg [7:0] address;
-	reg [6:0]instructionReg;
-	reg [199:0] result;
-	reg WB;
-	reg loadingMatrix;
-	reg [4:0] load_counter;
-	reg [7:0] base_address;
-	reg [15:0] write_data;
-	reg [4:0] store_counter;
-	reg [2:0] write_counter;
-	reg [5:0] det_counter;
-	reg write_done;
-	reg load_done;
-	reg [2:0] row1, row2;
-	reg [2:0] col1, col2;
-	reg [4:0] virt_idx1, virt_idx2;
-	reg read_pending;
-	reg fetch_done;
-	reg fetch_pending;
-	reg det_done;
+    // ======= REGISTRADORES DE CONTROLE =======
+    reg [2:0] opcode;               // Código da operação atual
+    reg [2:0] matrix_size;          // Tamanho da matriz (ex: 3 = 3x3)
+    reg [199:0] matrix1, matrix2;   // Matrizes de entrada (200 bits cada)
+    reg [7:0] real_number;          // Valor escalar para operações
+    reg [7:0] address;              // Endereço de memória atual
+    reg [6:0] instructionReg;       // Registrador de instrução
+    reg [199:0] result;             // Resultado das operações
+    reg WB;                         // Controle de escrita na memória
+    reg loadingMatrix;              // Flag de carregamento de matriz
+    reg [4:0] load_counter;         // Contador para carregamento
+    reg [7:0] base_address;         // Endereço base para carregamento
+    reg [15:0] write_data;          // Dados para escrita na memória
+    reg [4:0] store_counter;        // Contador para armazenamento
+    reg [2:0] write_counter;        // Contador de ciclos de escrita
+    reg [5:0] det_counter;          // Contador para cálculo de determinante
+    reg write_done;                 // Flag de escrita concluída
+    reg load_done;                  // Flag de carregamento concluído
+    reg [2:0] row1, row2;           // Índices de linha para matrizes
+    reg [2:0] col1, col2;           // Índices de coluna para matrizes
+    reg [4:0] virt_idx1, virt_idx2; // Índices virtuais para matrizes planas
+    reg read_pending;               // Flag de leitura pendente
+    reg fetch_done;                 // Flag de busca concluída
+    reg fetch_pending;              // Flag de busca pendente
+    reg det_done;                   // Flag de determinante concluído
 
-    // Fios de saída dos módulos
-    wire [199:0] ula_result;
-	 wire [2:0] size_wire;
-	 assign WB_wire = WB;
-	 assign mem_address = address;
-	 assign result_wire = write_data;
-	 assign first_element = matrix1[16:8];
-	 assign size_wire = matrix_size;
-	 
-	 //Flags
-	 reg Flag_A;
+    // ======= CONEXÕES DE FIO =======
+    wire [199:0] ula_result;       // Resultado da ULA
+    wire [2:0] size_wire;          // Tamanho da matriz (para ULA)
     
-    // Unidade Lógica Aritmética (ULA)
-	 alu ALU(
-	 .A_flat(matrix1),
-	 .B_flat(matrix2),
-	 .scalar(real_number),
-	 .opcode(opcode),
-	 .clock(clk),
-	 .C_flat(ula_result),
-	 .overflow_flag(overflow),
-	 .matrix_size(size_wire)
-	 );
+    // Atribuições contínuas para saídas
+    assign WB_wire = WB;                          // Sinal de Write Back
+    assign mem_address = address;                 // Endereço de memória
+    assign result_wire = write_data;              // Dados para escrita
+    assign first_element = matrix1[16:8];         // Debug: primeiro elemento
+    assign size_wire = matrix_size;               // Tamanho para ULA
+    assign DONE = (state_reg == CLEANUP);         // Sinal de operação concluída
 
-    // Lógica de transição de estados
+    // Instância da Unidade Lógica Aritmética (ULA)
+    alu ALU(
+        .A_flat(matrix1),         // Matriz de entrada A (formatada)
+        .B_flat(matrix2),         // Matriz de entrada B (formatada)
+        .scalar(real_number),     // Valor escalar para operações
+        .opcode(opcode),          // Código da operação
+        .clock(clk),              // Clock
+        .C_flat(ula_result),      // Resultado da operação
+        .overflow_flag(overflow), // Flag de overflow
+        .matrix_size(size_wire)   // Tamanho da matriz
+    );
+
+    // Lógica de transição de estados (clock ou reset)
     always @(posedge clk or posedge reset) begin
-		 if (reset)
-			  state_reg <= FETCH;
-		 else
-			  state_reg <= state_next;  // Estado avança corretamente
-	end
-	
-	// Lógica combinacional para o próximo estado
-		always @(*) begin
-			 case (state_reg)
-				FETCH: state_next = (Start_process) ? DECODE : FETCH; // ===OBS=== Falta colocar uma flag de start
-				DECODE: state_next = EXECUTE;
-			   EXECUTE: begin
-					 if (opcode == 3'b000 && load_done == 1) begin
-						  state_next = CLEANUP;  // Se opcode for 3'b000 e load_done for 1, vai para CLEANUP
-					 end else if (opcode == 3'b000 && load_done == 0) begin
-						  state_next = EXECUTE;  // Se opcode for 3'b000 e load_done for 0, permanece em EXECUTE
-					 end  else if (opcode == 3'b111 && det_done == 0)begin
-							state_next = EXECUTE;
-					 end else begin
-						  state_next = WRITEBACK;  // Para qualquer outro caso, vai para WRITEBACK
-					 end
-				end
-			    WRITEBACK: state_next = (write_done) ? CLEANUP : WRITEBACK;
-				CLEANUP: state_next = FETCH;
-				default: state_next = FETCH;
-			 endcase
-		end
-
-    // Lógica do pipeline
-    always @(posedge clk or posedge reset) begin
-			if (reset) begin
-			  instructionReg <= 7'b0;  
-			  opcode <= 3'b0;           
-			  matrix_size <= 3'b0;
-			  Flag_A <= 1'b0;                   
-			  WB <= 1'b0;               
-			  result <= 200'b0; 
-			  loadingMatrix <= 0;
-			  load_counter <= 0;
-			  base_address <= 0;
-			  write_done <= 1'b0;
-			  load_done <= 0;
-			  store_counter <= 0;
-			  write_counter <= 0;
-			  address <= 0;
-			  fetch_done <=0;
-			  fetch_pending <=0;
-			  det_done <= 0;
-			end else begin
-				  case (state_reg)
-						FETCH: begin
-								address <= 8'b0;
-								LED <= 1'b1;
-								fetch_pending <= 1;	
-								instructionReg <= Mem_data[6:0];
-						end
-						
-						DECODE: begin
-							 opcode <= instructionReg[0 +: 3];
-							 matrix_size <= instructionReg[3 +: 3];
-							 address <= 8'b00000001;
-							 Flag_A <= instructionReg[6 +: 1];
-							 LED <= 1'b0;
-							 $display("DECODE: opcode=%b, matrix_size=%d, Flag_A=%b", instructionReg[2:0], instructionReg[5:3], instructionReg[6]);
-						end
-
-						EXECUTE: begin
-								case (opcode)
-									// ======= LOAD MATRIZ ==========
-									3'b000: begin
-									if (!loadingMatrix) begin
-										loadingMatrix <= 1;
-										load_counter <= 0;
-										base_address <= address;
-										read_pending <= 1;
-										if (Flag_A == 0) matrix1 <= 200'b0;
-										else matrix2 <= 200'b0;
-									end else if (read_pending) begin
-										read_pending <= 0; // Espera 1 ciclo para Mem_data
-									end else begin
-										read_pending <= 1;
-										if (load_counter < (matrix_size * matrix_size)) begin
-											row1 = load_counter / matrix_size;
-											col1 = load_counter % matrix_size;
-											virt_idx1 = row1 * 5 + col1;
-											if (Flag_A == 0) begin
-												matrix1[virt_idx1*8 +: 8] <= Mem_data[15:8];
-											end else begin
-												matrix2[virt_idx1*8 +: 8] <= Mem_data[15:8];
-											end
-										end
-										if ((load_counter + 1) < (matrix_size * matrix_size)) begin
-											row2 = (load_counter + 1) / matrix_size;
-											col2 = (load_counter + 1) % matrix_size;
-											virt_idx2 = row2 * 5 + col2;
-											if (Flag_A == 0) begin
-												matrix1[virt_idx2*8 +: 8] <= Mem_data[7:0];
-											end else begin
-												matrix2[virt_idx2*8 +: 8] <= Mem_data[7:0];
-											end
-										end
-										load_counter <= load_counter + 2;
-										if ((load_counter + 2) >= (matrix_size * matrix_size)) begin
-											load_done <= 1;
-										end else begin
-											address <= address + 1;
-										end
-									end
-								end
-							  // ======= OPERAÇÕES (ex: soma, sub, etc) ==========
-							  3'b001, 3'b010, 3'b011, 3'b100, 3'b110: begin
-									result <= ula_result;
-									address <= 8'b00000011; // Endereço de gravação (ajuste se quiser)
-									LED <= 1'b1;
-							  end
-
-							  // ======= ESCALAR ==========
-							  3'b101: begin
-									result <= ula_result;
-									real_number <= matrix2[0 +: 8]; // Pega escalar da matrix2 (ou outro campo)
-									address <= 8'b00000011;
-									LED <= 1'b1;
-							  end
-							  
-							  3'b111: begin
-									det_done <= 0;
-									result <= ula_result;
-									address <= 8'b00000011; // Endereço de gravação (ajuste se quiser)
-									LED <= 1'b1;
-									if(det_counter < 3) begin
-										det_counter = det_counter + 1;
-									end else begin
-										det_done <= 1;
-									end
-							  end
-						 endcase
-					end
-					
-						WRITEBACK: begin
-							 LED <= 1'b1;
-							 WB <= 1'b1;
-
-							 // Sempre lê do buffer 5x5 (25 elementos)
-							 write_data[15:8] <= result[store_counter*8 +: 8];  // Elemento atual
-							 write_data[7:0] <= result[(store_counter+1)*8 +: 8]; // Próximo elemento
-
-							 // Endereço base + offset (cada par ocupa 1 half-word)
-							 address <= 8'd14 + (store_counter >> 1);
-
-							 // Controle de ciclos de escrita
-							 if (write_counter < 3) begin
-								  write_counter <= write_counter + 1;
-							 end else begin
-								  write_counter <= 0;
-								  store_counter <= store_counter + 2;
-
-								  // Finaliza após escrever TODOS os 25 elementos (5x5)
-								  if (store_counter >= 24) begin  // 25º elemento está no índice 24
-										WB <= 0;
-										store_counter <= 0;
-										write_done <= 1'b1;
-								  end
-							 end
-						end
-				
-				CLEANUP: begin
-					instructionReg <= 15'b000000000000000;
-					opcode <= 3'b000;
-					matrix_size <= 3'b000;
-					Flag_A <= 1'b0;
-					WB <= 1'b0;
-					result <= 200'b00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000;
-					LED <= 1'b0;
-					address <= 8'b00000000;
-					loadingMatrix <= 0;
-			      load_counter <= 0;
-			       base_address <= 0;
-					 write_done <= 1'b0;
-					 load_done <= 0;
-					 store_counter <= 0;
-					 write_counter <= 0;
-					 write_data <= 16'b0;
-					 fetch_done <=0;
-					read_pending <=0;
-					fetch_pending <=0;
-					det_done <= 0;
-					end
-				endcase
-		  end
+        if (reset) begin
+            state_reg <= FETCH;  // Reset coloca no estado inicial
+        end else begin
+            state_reg <= state_next;  // Transição normal de estados
+        end
     end
-	 
-	 // Adicionando sinais de depuração
+    
+    // Lógica combinacional para determinar próximo estado
+    always @(*) begin
+        case (state_reg)
+            FETCH: begin
+                // Vai para DECODE quando Start_process for ativado
+                state_next = (Start_process) ? DECODE : FETCH;
+            end
+            
+            DECODE: begin
+                // Após decodificar, vai para EXECUTE
+                state_next = EXECUTE;
+            end
+            
+            EXECUTE: begin
+                // Lógica complexa para determinar próximo estado
+                if (opcode == 3'b000 && load_done == 1) begin
+                    state_next = CLEANUP;  // Carregamento concluído
+                end else if (opcode == 3'b000 && load_done == 0) begin
+                    state_next = EXECUTE;  // Continua carregando
+                end else if (opcode == 3'b111 && det_done == 0) begin
+                    state_next = EXECUTE;  // Continua cálculo do determinante
+                end else begin
+                    state_next = WRITEBACK; // Operação concluída, vai para escrita
+                end
+            end
+            
+            WRITEBACK: begin
+                // Vai para CLEANUP quando escrita concluída
+                state_next = (write_done) ? CLEANUP : WRITEBACK;
+            end
+            
+            CLEANUP: begin
+                // Volta para FETCH para nova operação
+                state_next = FETCH;
+            end
+            
+            default: begin
+                state_next = FETCH;  // Estado padrão
+            end
+        endcase
+    end
+
+    // Lógica principal do pipeline (executada a cada clock)
+    always @(posedge clk or posedge reset) begin
+        if (reset) begin
+            // Reset de todos os registradores e flags
+            instructionReg <= 7'b0;  
+            opcode <= 3'b0;           
+            matrix_size <= 3'b0;
+            Flag_A <= 1'b0;                   
+            WB <= 1'b0;               
+            result <= 200'b0; 
+            loadingMatrix <= 0;
+            load_counter <= 0;
+            base_address <= 0;
+            write_done <= 1'b0;
+            load_done <= 0;
+            store_counter <= 0;
+            write_counter <= 0;
+            address <= 0;
+            fetch_done <=0;
+            fetch_pending <=0;
+            det_done <= 0;
+        end else begin
+            case (state_reg)
+                // Estado FETCH: busca a instrução
+                FETCH: begin
+                    address <= 8'b0;           // Zera endereço
+                    LED <= 1'b1;              // Acende LED
+                    fetch_pending <= 1;       // Marca busca pendente
+                    instructionReg <= Mem_data[6:0];  // Lê instrução
+                end
+                
+                // Estado DECODE: interpreta a instrução
+                DECODE: begin
+                    opcode <= instructionReg[0 +: 3];  // Bits 0-2: opcode
+                    matrix_size <= instructionReg[3 +: 3]; // Bits 3-5: tamanho
+                    address <= 8'b00000001;   // Próximo endereço
+                    Flag_A <= instructionReg[6 +: 1]; // Bit 6: flag A/B
+                    LED <= 1'b0;              // Apaga LED
+                end
+
+                // Estado EXECUTE: executa a operação
+                EXECUTE: begin
+                    case (opcode)
+                        // Operação 000: LOAD MATRIX
+                        3'b000: begin
+                            if (!loadingMatrix) begin
+                                // Inicia processo de carregamento
+                                loadingMatrix <= 1;
+                                load_counter <= 0;
+                                base_address <= address;
+                                read_pending <= 1;
+                                // Zera a matriz destino
+                                if (Flag_A == 0) matrix1 <= 200'b0;
+                                else matrix2 <= 200'b0;
+                            end else if (read_pending) begin
+                                // Espera 1 ciclo para Mem_data estar disponível
+                                read_pending <= 0;
+                            end else begin
+                                read_pending <= 1;
+                                // Carrega 2 elementos por ciclo (otimização)
+                                if (load_counter < (matrix_size * matrix_size)) begin
+                                    // Calcula posição do primeiro elemento
+                                    row1 = load_counter / matrix_size;
+                                    col1 = load_counter % matrix_size;
+                                    virt_idx1 = row1 * 5 + col1;
+                                    
+                                    // Armazena na matriz apropriada
+                                    if (Flag_A == 0) begin
+                                        matrix1[virt_idx1*8 +: 8] <= Mem_data[15:8];
+                                    end else begin
+                                        matrix2[virt_idx1*8 +: 8] <= Mem_data[15:8];
+                                    end
+                                end
+                                
+                                // Segundo elemento do par
+                                if ((load_counter + 1) < (matrix_size * matrix_size)) begin
+                                    row2 = (load_counter + 1) / matrix_size;
+                                    col2 = (load_counter + 1) % matrix_size;
+                                    virt_idx2 = row2 * 5 + col2;
+                                    
+                                    if (Flag_A == 0) begin
+                                        matrix1[virt_idx2*8 +: 8] <= Mem_data[7:0];
+                                    end else begin
+                                        matrix2[virt_idx2*8 +: 8] <= Mem_data[7:0];
+                                    end
+                                end
+                                
+                                // Atualiza contadores e endereço
+                                load_counter <= load_counter + 2;
+                                if ((load_counter + 2) >= (matrix_size * matrix_size)) begin
+                                    load_done <= 1;  // Carregamento concluído
+                                end else begin
+                                    address <= address + 1;  // Próximo endereço
+                                end
+                            end
+                        end
+                        
+                        // Operações 001-110: operações matriciais
+                        3'b001, 3'b010, 3'b011, 3'b100, 3'b110: begin
+                            result <= ula_result;  // Armazena resultado da ULA
+                            address <= 8'b00000011; // Endereço para escrita
+                            LED <= 1'b1;           // LED indica processamento
+                        end
+
+                        // Operação 101: multiplicação por escalar
+                        3'b101: begin
+                            result <= ula_result;  // Resultado da ULA
+                            real_number <= matrix2[0 +: 8]; // Pega escalar
+                            address <= 8'b00000011;
+                            LED <= 1'b1;
+                        end
+                        
+                        // Operação 111: cálculo de determinante
+                        3'b111: begin
+                            det_done <= 0;
+                            result <= ula_result;
+                            address <= 8'b00000011; 
+                            LED <= 1'b1;
+                            if(det_counter < 3) begin
+                                det_counter = det_counter + 1;
+                            end else begin
+                                det_done <= 1;  // Determinante concluído
+                            end
+                        end
+                    endcase
+                end
+                
+                // Estado WRITEBACK: escreve resultados na memória
+                WRITEBACK: begin
+                    LED <= 1'b1;        // LED indica escrita
+                    WB <= 1'b1;         // Ativa sinal de escrita
+
+                    // Escreve 2 elementos por ciclo (otimização)
+                    write_data[15:8] <= result[store_counter*8 +: 8];  // Elemento 1
+                    write_data[7:0] <= result[(store_counter+1)*8 +: 8]; // Elemento 2
+
+                    // Calcula endereço de escrita
+                    address <= 8'd14 + (store_counter >> 1);
+
+                    // Controle de ciclos de escrita
+                    if (write_counter < 3) begin
+                        write_counter <= write_counter + 1;
+                    end else begin
+                        write_counter <= 0;
+                        store_counter <= store_counter + 2;
+
+                        // Verifica se todos elementos foram escritos
+                        if (store_counter >= 24) begin  // 25 elementos (5x5)
+                            WB <= 0;            // Desativa escrita
+                            store_counter <= 0; // Zera contador
+                            write_done <= 1'b1; // Marca escrita concluída
+                        end
+                    end
+                end
+        
+                // Estado CLEANUP: prepara para próxima operação
+                CLEANUP: begin
+                    // Reseta todos os registradores e flags
+                    instructionReg <= 15'b0;
+                    opcode <= 3'b000;
+                    matrix_size <= 3'b000;
+                    Flag_A <= 1'b0;
+                    WB <= 1'b0;
+                    result <= 200'b0;
+                    LED <= 1'b0;
+                    address <= 8'b0;
+                    loadingMatrix <= 0;
+                    load_counter <= 0;
+                    base_address <= 0;
+                    write_done <= 1'b0;
+                    load_done <= 0;
+                    store_counter <= 0;
+                    write_counter <= 0;
+                    write_data <= 16'b0;
+                    fetch_done <=0;
+                    read_pending <=0;
+                    fetch_pending <=0;
+                    det_done <= 0;
+                end
+            endcase
+        end
+    end
+    
+    // Bloco de debug para monitorar estados
     always @(posedge clk) begin
-        // Depuração para verificar se o estado está mudando corretamente
         $display("State Reg: %b, State Next: %b", state_reg, state_next);
     end
 
